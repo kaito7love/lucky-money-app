@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
 import { useLocalStorageValue } from "@/lib/useLocalStorageValue";
+import { useRouteParams } from "@/lib/useRouteParams";
 import ClaimForm from "@/components/claim/ClaimForm/ClaimForm";
 import EnvelopeRevealCard from "@/components/claim/EnvelopeRevealCard/EnvelopeRevealCard";
 import styles from "./page.module.css";
@@ -27,7 +27,7 @@ interface Receipt {
 type Stage = "loading" | "form" | "closed" | "opened" | "unavailable";
 
 export default function ClaimPage() {
-  const params = useParams<{ token: string }>()!;
+  const params = useRouteParams<{ token: string }>();
   const storedReceiptRaw = useLocalStorageValue(`lucky_claim_${params.token}`);
   const storedReceipt = useMemo<Receipt | null>(() => {
     if (!storedReceiptRaw) return null;
@@ -58,6 +58,10 @@ export default function ClaimPage() {
       .then(async (res) => {
         const json = await res.json();
         if (!res.ok) {
+          if (storedReceipt) {
+            setStage("opened");
+            return;
+          }
           setError(json.error === "POOL_NOT_FOUND" ? "Không tìm thấy lì xì này." : "Có lỗi xảy ra.");
           setStage("unavailable");
           return;
@@ -72,6 +76,10 @@ export default function ClaimPage() {
         }
       })
       .catch(() => {
+        if (storedReceipt) {
+          setStage("opened");
+          return;
+        }
         setError("Không thể kết nối máy chủ.");
         setStage("unavailable");
       });

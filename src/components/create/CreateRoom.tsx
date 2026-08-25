@@ -9,6 +9,22 @@ import PrivacySettings from "./Privacy/PrivacySettings";
 
 type Mode = "random" | "fixed";
 
+const ERROR_MESSAGES: Record<string, string> = {
+    MISSING_NAME: "Vui lòng nhập tên phòng.",
+    MISSING_HOST_NAME: "Vui lòng nhập tên của bạn.",
+    INVALID_TOTAL_AMOUNT: "Tổng số tiền không hợp lệ.",
+    INVALID_ENVELOPE_COUNT: "Số bao lì xì không hợp lệ (tối đa 500).",
+    INVALID_MODE: "Cách chia bao lì xì không hợp lệ.",
+    INVALID_INPUT: "Giá trị min/max không hợp lệ.",
+    INVALID_RANGE: "Không thể chia tổng số tiền với min/max đã chọn.",
+    COUNT_MISMATCH: "Số giá trị nhập vào không khớp với số bao lì xì.",
+    INVALID_VALUE: "Có giá trị bao lì xì không hợp lệ.",
+    SUM_MISMATCH: "Tổng giá trị các bao không khớp với tổng số tiền.",
+    INVALID_EXPIRY: "Thời gian hết hạn không hợp lệ.",
+    POOL_CREATE_FAILED: "Không thể tạo phòng, vui lòng thử lại.",
+    ENVELOPES_CREATE_FAILED: "Không thể tạo bao lì xì, vui lòng thử lại.",
+};
+
 const CreateRoom = () => {
     const router = useRouter();
     const [name, setName] = useState("");
@@ -61,7 +77,7 @@ const CreateRoom = () => {
             });
             const data = await res.json();
             if (!res.ok) {
-                setError(data.error ?? "Có lỗi xảy ra");
+                setError(ERROR_MESSAGES[data.error] ?? "Có lỗi xảy ra, vui lòng thử lại.");
                 setSubmitting(false);
                 return;
             }

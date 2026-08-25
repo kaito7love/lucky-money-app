@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { formatVnd } from "@/lib/formatVnd";
 
 interface Transaction {
   id: string;
@@ -67,7 +68,7 @@ export default function WalletPage() {
         <>
           <div className="bg-envelope-gold/20 rounded-2xl p-4 text-center mb-6">
             <p className="text-xs text-gray-600">Tổng đã nhận</p>
-            <p className="text-3xl font-bold text-envelope">{balance.toLocaleString("vi-VN")}đ</p>
+            <p className="text-3xl font-bold text-envelope">{formatVnd(balance)}</p>
           </div>
 
           <h2 className="font-semibold mb-2">Lịch sử</h2>
@@ -78,7 +79,7 @@ export default function WalletPage() {
               {transactions.map((t) => (
                 <li key={t.id} className="flex justify-between items-center bg-white border border-gray-100 rounded-xl px-4 py-3 text-sm shadow-sm">
                   <span className="text-gray-500">{new Date(t.created_at).toLocaleString("vi-VN")}</span>
-                  <span className="font-semibold text-envelope">+{t.amount.toLocaleString("vi-VN")}đ</span>
+                  <span className="font-semibold text-envelope">+{formatVnd(t.amount)}</span>
                 </li>
               ))}
             </ul>

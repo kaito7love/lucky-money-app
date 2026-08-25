@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import QRCode from "qrcode";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useLocalStorageValue } from "@/lib/useLocalStorageValue";
+import { useRouteParams } from "@/lib/useRouteParams";
 import ShareRoom from "@/components/share/ShareRoom";
 
 interface Claim {
@@ -45,8 +45,13 @@ async function fetchPoolData(id: string, hostToken: string): Promise<{ ok: boole
   return { ok: res.ok, json };
 }
 
+function buildClaimUrl(qrToken: string): string {
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  return `${origin}/claim/${qrToken}`;
+}
+
 export default function PoolHostPage() {
-  const params = useParams<{ id: string }>()!;
+  const params = useRouteParams<{ id: string }>();
   const hostToken = useLocalStorageValue(`lucky_host_token_${params.id}`);
   const [data, setData] = useState<PoolData | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
@@ -65,8 +70,7 @@ export default function PoolHostPage() {
 
   useEffect(() => {
     if (!data) return;
-    const claimUrl = `${window.location.origin}/claim/${data.pool.qr_token}`;
-    QRCode.toDataURL(claimUrl, { width: 260, margin: 1 }).then(setQrDataUrl);
+    QRCode.toDataURL(buildClaimUrl(data.pool.qr_token), { width: 260, margin: 1 }).then(setQrDataUrl);
   }, [data]);
 
   useEffect(() => {
@@ -111,7 +115,7 @@ export default function PoolHostPage() {
     return <p className="p-6 text-sm text-gray-600">Đang tải...</p>;
   }
 
-  const claimUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/claim/${data.pool.qr_token}`;
+  const claimUrl = buildClaimUrl(data.pool.qr_token);
 
   return (
     <ShareRoom

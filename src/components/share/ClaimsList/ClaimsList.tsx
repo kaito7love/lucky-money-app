@@ -1,4 +1,5 @@
 import styles from "./ClaimsList.module.css";
+import { formatVnd } from "@/lib/formatVnd";
 
 interface Claim {
     id: string;
@@ -25,7 +26,7 @@ const ClaimsList = ({ claims }: ClaimsListProps) => (
                             <span className={styles.phone}>{c.phone_masked}</span>
                         </span>
                         <span className={styles.value}>
-                            {c.value.toLocaleString("vi-VN")}đ
+                            {formatVnd(c.value)}
                         </span>
                     </li>
                 ))}

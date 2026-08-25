@@ -1,6 +1,7 @@
 "use client";
 
 import styles from "./EnvelopeRevealCard.module.css";
+import { formatVnd } from "@/lib/formatVnd";
 
 interface EnvelopeRevealCardProps {
     stage: "closed" | "opened";
@@ -34,7 +35,7 @@ const EnvelopeRevealCard = ({
             <p className={styles.emoji}>🧧</p>
             <p className={styles.subTitle}>Lì Xì từ {hostName}</p>
             <p className={styles.receivedLabel}>Bạn đã nhận được</p>
-            <p className={styles.value}>{claimedValue.toLocaleString("vi-VN")}đ</p>
+            <p className={styles.value}>{formatVnd(claimedValue)}</p>
             <p className={styles.claimant}>{claimantName}</p>
         </div>
     );
