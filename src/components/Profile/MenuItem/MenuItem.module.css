@@ -1,0 +1,105 @@
+.item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem 1.25rem; /* Tăng padding trái phải cho thoáng */
+
+    /* Bo tròn mạnh hơn theo phong cách iOS/Modern UI */
+    border-radius: 3rem;
+
+    border: 1px solid rgba(0, 0, 0, 0.03); /* Viền cực mảnh để định hình khối */
+    background: white;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); /* Bóng đổ mềm hơn */
+    outline: none;
+}
+
+:global(.dark) .item {
+    background: #2c1a1a;
+    border-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Hiệu ứng khi di chuột (Desktop) */
+.item:hover {
+    background: #fffafa;
+    transform: translateX(6px);
+    box-shadow: 0 6px 16px rgba(244, 37, 37, 0.08);
+}
+
+:global(.dark) .item:hover {
+    background: #362121;
+}
+
+/* Hiệu ứng khi chạm/nhấn (Mobile) - Cực kỳ quan trọng */
+.item:active {
+    transform: scale(0.96) translateX(0);
+    background: #fdf2f2;
+    transition: all 0.1s;
+}
+
+:global(.dark) .item:active {
+    background: #3d2525;
+}
+
+.iconWrapper {
+    color: #f42525;
+    background: #fff1f1; /* Màu nền icon nhẹ nhàng hơn */
+    width: 44px; /* Tăng nhẹ kích thước */
+    height: 44px;
+    border-radius: 1rem; /* Icon wrapper cũng bo tròn kiểu squircle */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    shrink: 0;
+}
+
+:global(.dark) .iconWrapper {
+    background: rgba(244, 37, 37, 0.15);
+}
+
+.label {
+    flex: 1;
+    text-align: left;
+    font-weight: 600; /* Đậm hơn một chút để dễ đọc */
+    font-size: 1rem;
+    color: #1c0d0d;
+}
+
+:global(.dark) .label {
+    color: #eee;
+}
+
+.rightContent {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.badge {
+    background: #f42525;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 800;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(244, 37, 37, 0.3);
+}
+
+.value {
+    font-size: 0.9rem;
+    color: #8e8e93; /* Màu xám chuẩn iOS */
+    font-weight: 400;
+}
+
+.chevron {
+    color: #c7c7cc;
+    font-size: 20px !important;
+}

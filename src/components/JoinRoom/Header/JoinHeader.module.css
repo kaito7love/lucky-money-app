@@ -1,0 +1,35 @@
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    sticky: top;
+    z-index: 20;
+    background: rgba(248, 245, 245, 0.95);
+    backdrop-filter: blur(8px);
+}
+.backBtn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    cursor: pointer;
+    background: transparent;
+}
+.backBtn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+.title {
+    flex: 1;
+    text-align: center;
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-right: 40px;
+}
+.spacer {
+    width: 40px;
+}

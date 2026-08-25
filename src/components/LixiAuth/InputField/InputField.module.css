@@ -1,0 +1,93 @@
+.group {
+    margin-bottom: 1.25rem;
+    width: 100%; /* Đảm bảo group chiếm hết chiều rộng cha */
+}
+
+.label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    margin: 0 0 6px 4px;
+    display: block;
+}
+
+.wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.input {
+    /* CHÌA KHÓA Ở ĐÂY: Giúp width: 100% bao gồm cả padding */
+    box-sizing: border-box;
+
+    width: 100%;
+    height: 3.5rem;
+    border-radius: 1.25rem;
+    border: none;
+    background: white;
+    font-size: 1rem;
+    font-weight: 500;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    padding: 0 1rem; /* Padding mặc định */
+    transition: all 0.2s ease;
+}
+
+.input:focus {
+    outline: 2px solid #ea2a33;
+    background: #fff;
+}
+
+.icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    z-index: 1;
+    pointer-events: none; /* Tránh việc click vào icon làm mất focus input */
+}
+
+.prefix {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-weight: 700;
+    font-size: 0.875rem;
+    border-right: 1px solid #eee;
+    padding-right: 10px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+}
+
+/* Điều chỉnh khoảng cách chữ khi có icon/prefix */
+.hasIcon {
+    padding-left: 3.5rem !important;
+}
+
+.hasPrefix {
+    padding-left: 4.8rem !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    .input {
+        background: #2a1a1a;
+        color: white;
+    }
+    .prefix {
+        border-right-color: #3f2a2a;
+    }
+}
+.page {
+    min-height: 100vh;
+    width: 100%; /* Đảm bảo full chiều ngang */
+    background: #ea2a33;
+    display: flex;
+    flex-direction: column;
+    font-family: "Be Vietnam Pro", sans-serif;
+    margin: 0; /* Reset margin lần nữa cho chắc */
+    overflow-x: hidden;
+}

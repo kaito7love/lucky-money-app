@@ -1,0 +1,66 @@
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.page {
+    min-height: 100vh;
+    background: #ea2a33;
+    display: flex;
+    flex-direction: column;
+    font-family: "Be Vietnam Pro", sans-serif;
+}
+.formContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: 1rem;
+}
+.card {
+    flex: 1;
+    background: #f8f6f6;
+    border-radius: 3rem 3rem 0 0;
+    display: flex;
+    flex-direction: column;
+}
+.formBody {
+    padding: 1rem 2rem;
+}
+.submitBtn {
+    width: 100%;
+    height: 3.5rem;
+    background: #ea2a33;
+    color: white;
+    border: none;
+    border-radius: 1.25rem;
+    font-weight: 700;
+    font-size: 1.125rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(234, 42, 51, 0.3);
+}
+.footer {
+    margin-top: auto;
+    padding: 2rem;
+    text-align: center;
+}
+.footerText {
+    font-size: 10px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.link {
+    color: #ea2a33;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    .card {
+        background: #211111;
+    }
+}

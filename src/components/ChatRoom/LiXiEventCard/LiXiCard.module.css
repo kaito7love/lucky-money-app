@@ -1,0 +1,149 @@
+.container {
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+.card {
+    position: relative;
+    background: linear-gradient(to bottom right, #ea2a33, #b91c1c);
+    border-radius: 2rem; /* Bo góc cực đại giống ảnh */
+    padding: 1.5rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+}
+
+.decorIcon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    opacity: 0.2;
+    color: white;
+}
+
+.decorIcon span {
+    font-size: 48px;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.topSection {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.giftIconBox {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.title {
+    color: white;
+    font-size: 1.35rem; /* Chữ to rõ */
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.subTitle {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin: 0;
+    margin-top: 2px;
+}
+
+.divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    width: 100%;
+}
+
+.bottomSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.messageText {
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-style: italic;
+    margin: 0;
+    line-height: 1.3;
+    /* max-width: 200px; */
+}
+
+.timerRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-top: 12px;
+    font-family: monospace;
+}
+
+.timerRow span:first-child {
+    font-size: 18px;
+    color: #d4af37;
+}
+
+/* NÚT BẤM VÀNG TO BẢN */
+.openBtn {
+    background: #d4af37;
+    border: none;
+    border-radius: 2rem;
+    padding: 0.6rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
+}
+
+.openBtn:active {
+    transform: scale(0.95);
+}
+
+.openBtn span {
+    color: #211111;
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
+/* Icon bao lì xì nhỏ trong nút */
+.miniLixi {
+    width: 16px;
+    height: 22px;
+    background: #ea2a33;
+    border-radius: 2px;
+    position: relative;
+    border: 1px solid #211111;
+}
+
+.lixiSeal {
+    width: 4px;
+    height: 4px;
+    background: #d4af37;
+    border-radius: 50%;
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+}

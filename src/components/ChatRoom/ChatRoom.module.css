@@ -1,0 +1,63 @@
+.container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff9f9;
+    overflow: hidden;
+}
+:global(.dark) .container {
+    background: #211111;
+}
+.scrollArea {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+}
+.patternLayer {
+    position: absolute;
+    inset: 0;
+    opacity: 0.05;
+    pointer-events: none;
+    background-image: radial-gradient(#ea2a33 0.5px, transparent 0.5px),
+        radial-gradient(#ea2a33 0.5px, #fff9f9 0.5px);
+    background-size: 20px 20px;
+}
+.chatContent {
+    position: relative;
+    z-index: 1;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.dateTag {
+    display: flex;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 8px 0;
+}
+.dateTag span {
+    background: rgba(243, 231, 232, 0.85);
+    color: #5c3a3a;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    backdrop-filter: blur(4px);
+}
+.systemNotify {
+    align-self: center;
+    background: #fefce8;
+    border: 1px solid #fef9c3;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    color: #854d0e;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.systemNotify span {
+    font-size: 14px;
+}

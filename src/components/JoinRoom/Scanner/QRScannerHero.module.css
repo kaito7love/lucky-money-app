@@ -1,0 +1,114 @@
+.wrapper {
+    padding: 0.5rem 1rem;
+}
+.scannerCard {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/5;
+    border-radius: 2rem;
+    overflow: hidden;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+    box-shadow: 0 20px 25px -5px rgba(244, 37, 37, 0.2);
+}
+.scannerCard:active {
+    transform: scale(0.98);
+}
+.bgImage {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD8FIM1_A6CNMo66GBxu4UTgXjDpLkwUlT0NoDmgKRZuGZcEJYIKzJjNquWeMuESgZhatsRVhyf5mCsJRDRuiAi3YrkcrexykFGJPJmM-uRgGMEE_OrI7cYwmnfDX9yN3FHVsr-mSKoFwqjrjVFQYeW2hyCxUv-R_4efGpH4u-TuzhmmD09MuG2Xbx1ZuxQ9qVfudhQ89wIe55mRJ9yAu2Ym79MH2d6mhbniMiPK2fWrQjZlVU1NhsgH2omhMefYmduhQI3XLuEN0dE");
+    transition: transform 1s;
+}
+.scannerCard:hover .bgImage {
+    transform: scale(1.05);
+}
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.9),
+        rgba(0, 0, 0, 0.4),
+        rgba(0, 0, 0, 0.3)
+    );
+}
+.content {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+.scannerFrame {
+    position: relative;
+    width: 12rem;
+    height: 12rem;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(2px);
+    border-radius: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+.corner {
+    position: absolute;
+    width: 2rem;
+    height: 2rem;
+    border-color: #f42525;
+    border-style: solid;
+    margin: 4px;
+}
+.tl {
+    top: 0;
+    left: 0;
+    border-width: 3px 0 0 3px;
+    border-top-left-radius: 0.75rem;
+}
+.tr {
+    top: 0;
+    right: 0;
+    border-width: 3px 3px 0 0;
+    border-top-right-radius: 0.75rem;
+}
+.bl {
+    bottom: 0;
+    left: 0;
+    border-width: 0 0 3px 3px;
+    border-bottom-left-radius: 0.75rem;
+}
+.br {
+    bottom: 0;
+    right: 0;
+    border-width: 0 3px 3px 0;
+    border-bottom-right-radius: 0.75rem;
+}
+.icon {
+    font-size: 60px;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+.scanLine {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: rgba(244, 37, 37, 0.8);
+    top: 50%;
+    box-shadow: 0 0 15px #f42525;
+    opacity: 0.7;
+}
+.title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+.subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.875rem;
+}

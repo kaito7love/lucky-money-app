@@ -1,0 +1,80 @@
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    /* Màu trắng kem với độ trong suốt nhẹ để thấy hiệu ứng blur */
+    background-color: rgba(254, 249, 245, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(234, 42, 51, 0.05); /* Primary 5% */
+    transition: all 0.2s ease;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    max-width: 32rem; /* Tương đương max-w-lg */
+    margin: 0 auto;
+    width: 100%;
+}
+
+.textGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.label {
+    font-size: 0.75rem; /* text-xs */
+    font-weight: 700;
+    color: #ea2a33; /* Primary */
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 2px;
+    opacity: 0.9;
+}
+
+.title {
+    font-size: 1.5rem; /* text-2xl */
+    font-weight: 700;
+    color: #1b0e0e; /* Màu chữ tối gốc */
+    line-height: 1;
+    letter-spacing: -0.025em;
+}
+
+.profileArea {
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.avatarWrapper {
+    position: relative;
+    padding: 2px;
+}
+
+.avatar {
+    width: 2.75rem; /* size-11 */
+    height: 2.75rem;
+    border-radius: 9999px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    box-shadow: 0 0 0 2px rgba(234, 42, 51, 0.1); /* Ring primary/10 */
+    transition: box-shadow 0.2s ease;
+}
+
+.avatar:hover {
+    box-shadow: 0 0 0 2px rgba(234, 42, 51, 0.3);
+}
+
+.statusDot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 0.875rem; /* size-3.5 */
+    height: 0.875rem;
+    background-color: #4ade80;
+    border: 2px solid #fef9f5; /* Khớp với màu nền cream */
+    border-radius: 9999px;
+}

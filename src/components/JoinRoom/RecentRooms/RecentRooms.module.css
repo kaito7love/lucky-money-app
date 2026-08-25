@@ -1,0 +1,71 @@
+.container {
+    margin-top: 2rem;
+    padding: 0 1rem;
+}
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0 0.5rem;
+}
+.header h3 {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #111;
+}
+.header button {
+    font-size: 0.75rem;
+    color: #f42525;
+    font-weight: 500;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+.scrollArea {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+}
+.scrollArea::-webkit-scrollbar {
+    display: none;
+}
+.roomItem {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 4rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+.avatar {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    border: 2px solid transparent;
+    transition: 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.roomItem:hover .avatar {
+    border-color: #f42525;
+}
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.roomItem span {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #4b5563;
+    text-align: center;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
