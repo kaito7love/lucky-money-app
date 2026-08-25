@@ -1,73 +1,58 @@
-# React + TypeScript + Vite
+# Lucky Money — Lì Xì Nhóm
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+MVP đầu tiên: Host tạo một pool lì xì (tổng tiền + số bao, chia cố định hoặc
+random có min/max), chia sẻ QR, khách quét QR nhập tên + số điện thoại để
+nhận một bao ngẫu nhiên. Host xem danh sách nhận trực tiếp (realtime).
 
-Currently, two official plugins are available:
+## Quyết định thiết kế chính
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Không có tài khoản đầy đủ.** Guest chỉ xác thực bằng tên + số điện
+  thoại (không OTP/OAuth) — đây là lựa chọn có chủ đích để ưu tiên tốc độ
+  cho bản đầu tiên. Số điện thoại đóng vai trò định danh cho ví điểm.
+- **Host quản lý pool qua `host_token`** — một chuỗi bí mật được sinh khi
+  tạo pool, lưu trong `localStorage` trình duyệt. Mất token = mất quyền
+  quản lý (không có khôi phục ở bản này).
+- **Ví là ledger (append-only)** ở `wallet_transactions`, không phải một
+  cột `balance` đơn giản — chuẩn bị sẵn cho việc sau này thêm quy đổi ra
+  tiền thật/voucher mà không phải viết lại hệ thống ví.
+- **Random chia bao** dùng thuật toán kiểu WeChat hongbao
+  (`src/lib/envelopes.ts`) — đảm bảo mọi bao đều nằm trong [min, max] và
+  tổng đúng bằng tổng pool.
+- **Chống trùng bao khi nhiều người quét cùng lúc**: hàm `claim_envelope()`
+  trong Postgres khoá row của pool trước (`FOR UPDATE`), nên các lượt nhận
+  trong cùng một pool được xử lý tuần tự — ưu tiên đúng đắn hơn thông lượng
+  thô, phù hợp quy mô vài chục–vài trăm người/pool.
+- **Tra cứu ví bằng số điện thoại** không cần mật khẩu — đây là đánh đổi
+  quyền riêng tư đã thống nhất cho bản MVP (bất kỳ ai biết số điện thoại
+  của bạn có thể xem tổng bạn đã nhận).
 
-## React Compiler
+## Cài đặt
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Tạo project trên [Supabase](https://supabase.com), lấy `Project URL`,
+   `anon key`, `service_role key`.
+2. Copy `.env.example` thành `.env.local` và điền các giá trị trên.
+3. Chạy migration `supabase/migrations/0001_init.sql` trong SQL Editor của
+   Supabase (tạo bảng `pools`, `envelopes`, `wallet_transactions`, hàm
+   `claim_envelope()`, và bật realtime cho bảng `envelopes`).
+4. Cài dependencies và chạy dev server:
 
-## Expanding the ESLint configuration
+   ```bash
+   npm install
+   npm run dev
+   ```
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+5. Mở `http://localhost:3000`.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Luồng sử dụng
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Host**: `/create` → điền thông tin pool → nhận QR tại `/pool/[id]`.
+- **Guest**: quét QR → `/claim/[qr_token]` → nhập tên + SĐT → nhận bao lì xì.
+- **Tra cứu ví**: `/wallet` → nhập số điện thoại đã dùng để nhận lì xì.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Ngoài phạm vi MVP này (để sau)
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- OTP/OAuth xác thực mạnh hơn cho Guest
+- Tính năng rút/quy đổi tiền thật hoặc voucher (schema đã sẵn sàng, chưa
+  build tính năng)
+- Giới hạn danh sách mời riêng theo số điện thoại/email
+- Gamification khác (vòng quay, streak điểm danh, level...)

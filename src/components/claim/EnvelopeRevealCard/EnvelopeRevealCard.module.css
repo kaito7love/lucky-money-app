@@ -1,0 +1,84 @@
+.closedCard {
+    width: 10rem;
+    height: 13rem;
+    background: linear-gradient(to bottom right, #ea2a33, #b91c1c);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    transition: transform 0.2s;
+}
+.closedCard:hover {
+    transform: scale(1.05);
+}
+.seal {
+    color: #d4af37;
+    font-size: 3rem;
+    font-weight: 800;
+}
+.tapHint {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.75rem;
+}
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.85;
+    }
+}
+
+.openedCard {
+    position: relative;
+    width: 14rem;
+    background: white;
+    border: 2px solid #d4af37;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.2);
+    padding: 1.5rem;
+    text-align: center;
+    overflow: hidden;
+}
+.decorIcon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    opacity: 0.15;
+    color: #ea2a33;
+}
+.decorIcon span {
+    font-size: 40px;
+}
+.emoji {
+    font-size: 2.5rem;
+    margin: 0 0 0.5rem;
+}
+.subTitle {
+    font-size: 0.8rem;
+    color: #71717a;
+    margin: 0 0 0.75rem;
+}
+.receivedLabel {
+    font-size: 0.875rem;
+    color: #71717a;
+    margin: 0 0 0.25rem;
+}
+.value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #ea2a33;
+    margin: 0;
+}
+.claimant {
+    font-size: 0.75rem;
+    color: #a1a1aa;
+    margin-top: 0.75rem;
+}

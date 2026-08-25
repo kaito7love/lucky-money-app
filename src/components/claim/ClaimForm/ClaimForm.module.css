@@ -1,0 +1,29 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+}
+.errorText {
+    color: #ea2a33;
+    font-size: 0.875rem;
+    text-align: center;
+}
+.submitBtn {
+    width: 100%;
+    height: 56px;
+    background: #ea2a33;
+    color: white;
+    border: none;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 10px 15px -3px rgba(234, 42, 51, 0.3);
+}
+.submitBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
