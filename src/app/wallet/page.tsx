@@ -42,6 +42,14 @@ export default function WalletPage() {
 
   return (
     <main className="flex-1 p-6">
+      <button
+        onClick={() => window.history.back()}
+        className="w-10 h-10 -ml-2 mb-3 flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-100"
+        aria-label="Quay lại"
+      >
+        <span className="material-symbols-outlined">arrow_back</span>
+      </button>
+
       <h1 className="text-2xl font-bold text-envelope mb-1">🧧 Ví lì xì</h1>
       <p className="text-sm text-gray-600 mb-6">Nhập số điện thoại bạn đã dùng để nhận lì xì.</p>
 
