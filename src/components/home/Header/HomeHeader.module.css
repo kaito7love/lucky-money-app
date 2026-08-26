@@ -20,6 +20,13 @@
     width: 100%;
 }
 
+@media (min-width: 1024px) {
+    .container {
+        max-width: 72rem;
+        padding: 1rem 2.5rem;
+    }
+}
+
 .textGroup {
     display: flex;
     flex-direction: column;
