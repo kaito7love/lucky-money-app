@@ -54,10 +54,16 @@
 .roomItem:hover .avatar {
     border-color: #f42525;
 }
-.avatar img {
+.avatarInitial {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f42525;
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 700;
 }
 .roomItem span {
     font-size: 0.75rem;
