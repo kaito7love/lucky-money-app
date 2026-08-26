@@ -2,6 +2,14 @@ import styles from "./AuthHeader.module.css";
 
 const Header = () => (
     <div className={styles.header}>
+        <button
+            className={styles.backButton}
+            onClick={() => window.history.back()}
+            aria-label="Quay lại"
+        >
+            <span className="material-symbols-outlined">arrow_back</span>
+        </button>
+
         <div className={styles.logoWrapper}>
             <div className={styles.mainLogo}>
                 <span

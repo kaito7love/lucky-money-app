@@ -13,7 +13,11 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
     avatarUrl,
 }) => (
     <header className={styles.header}>
-        <button className={styles.iconBtn}>
+        <button
+            className={styles.iconBtn}
+            onClick={() => window.history.back()}
+            aria-label="Quay lại"
+        >
             <span className="material-symbols-outlined">arrow_back</span>
         </button>
         <div className={styles.info}>

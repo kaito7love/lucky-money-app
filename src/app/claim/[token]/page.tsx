@@ -116,6 +116,14 @@ export default function ClaimPage() {
 
   return (
     <div className={styles.page}>
+      <button
+        className={styles.backButton}
+        onClick={() => window.history.back()}
+        aria-label="Quay lại"
+      >
+        <span className="material-symbols-outlined">arrow_back</span>
+      </button>
+
       {pool && (
         <div className={styles.poolHeader}>
           <h1 className={styles.poolName}>{pool.name}</h1>

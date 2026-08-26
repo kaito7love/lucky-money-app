@@ -1,8 +1,24 @@
 .header {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 3rem 1.5rem 1.5rem;
+}
+.backButton {
+    position: absolute;
+    top: 1.25rem;
+    left: 1.25rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
 .logoWrapper {
     position: relative;
