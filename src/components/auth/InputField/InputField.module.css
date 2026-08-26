@@ -77,6 +77,9 @@
         background: #2a1a1a;
         color: white;
     }
+    .input:focus {
+        background: #2a1a1a;
+    }
     .prefix {
         border-right-color: #3f2a2a;
     }
