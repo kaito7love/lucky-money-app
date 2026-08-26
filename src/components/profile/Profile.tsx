@@ -17,6 +17,13 @@ const Profile = () => {
     if (!user) {
         return (
             <div className={styles.signedOut}>
+                <button
+                    className={styles.backBtn}
+                    onClick={() => window.history.back()}
+                    aria-label="Quay lại"
+                >
+                    <span className="material-symbols-outlined">arrow_back</span>
+                </button>
                 <span className="material-symbols-outlined">account_circle</span>
                 <p>Bạn chưa đăng nhập.</p>
                 <button
