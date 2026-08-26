@@ -38,6 +38,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   POOL_NOT_FOUND: "Không tìm thấy lì xì này.",
   FORBIDDEN: "Bạn không có quyền quản lý lì xì này trên thiết bị này.",
   ENVELOPES_FETCH_FAILED: "Không thể tải danh sách bao lì xì.",
+  POOL_NOT_ACTIVE: "Phòng lì xì này không còn đang mở.",
+  CLOSE_FAILED: "Không thể đóng phòng, vui lòng thử lại.",
 };
 
 /** Pure fetch + parse, no state — callers apply the result via .then(). */
@@ -85,7 +87,7 @@ export default function PoolHostPage() {
         () => {
           fetchPoolData(params.id, hostToken).then(({ ok, json }) => {
             if (!ok) {
-              setError(json.error ?? "Không thể tải dữ liệu");
+              setError((json.error && ERROR_MESSAGES[json.error]) ?? "Không thể tải dữ liệu, vui lòng thử lại.");
               return;
             }
             setData(json);
@@ -119,6 +121,26 @@ export default function PoolHostPage() {
 
   const claimUrl = buildClaimUrl(data.pool.qr_token);
 
+  async function handleClosePool() {
+    if (!hostToken) return;
+    if (!window.confirm("Đóng phòng lì xì này ngay? Các bao chưa nhận sẽ không thể nhận được nữa.")) {
+      return;
+    }
+    const res = await fetch(`/api/pools/${params.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ host_token: hostToken }),
+    });
+    if (res.ok) {
+      fetchPoolData(params.id, hostToken).then(({ ok, json }) => {
+        if (ok) setData(json);
+      });
+    } else {
+      const json = await res.json();
+      alert((json.error && ERROR_MESSAGES[json.error]) ?? "Không thể đóng phòng, vui lòng thử lại.");
+    }
+  }
+
   return (
     <ShareRoom
       poolName={data.pool.name}
@@ -129,6 +151,7 @@ export default function PoolHostPage() {
       remaining={data.remaining}
       totalEnvelopes={data.total_envelopes}
       claims={data.claims}
+      onClosePool={data.pool.status === "active" ? handleClosePool : undefined}
     />
   );
 }

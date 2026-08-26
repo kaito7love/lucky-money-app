@@ -54,3 +54,46 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     })),
   });
 }
+
+/** Host-only: close a still-active pool early. Unclaimed envelopes become unreachable. */
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  let body: { host_token?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "INVALID_JSON" }, { status: 400 });
+  }
+
+  if (!body.host_token) {
+    return NextResponse.json({ error: "MISSING_HOST_TOKEN" }, { status: 401 });
+  }
+
+  const { data: pool, error: poolError } = await supabaseAdmin
+    .from("pools")
+    .select("id, host_token, status")
+    .eq("id", id)
+    .single();
+
+  if (poolError || !pool) {
+    return NextResponse.json({ error: "POOL_NOT_FOUND" }, { status: 404 });
+  }
+  if (pool.host_token !== body.host_token) {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
+  if (pool.status !== "active") {
+    return NextResponse.json({ error: "POOL_NOT_ACTIVE" }, { status: 409 });
+  }
+
+  const { error: updateError } = await supabaseAdmin
+    .from("pools")
+    .update({ status: "closed" })
+    .eq("id", id)
+    .eq("status", "active");
+
+  if (updateError) {
+    return NextResponse.json({ error: "CLOSE_FAILED" }, { status: 500 });
+  }
+
+  return NextResponse.json({ status: "closed" });
+}

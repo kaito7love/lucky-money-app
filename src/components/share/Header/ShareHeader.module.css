@@ -30,3 +30,52 @@
     letter-spacing: 0.025em;
     margin: 0;
 }
+
+.spacer {
+    width: 40px;
+    height: 40px;
+}
+
+.menuWrapper {
+    position: relative;
+}
+
+.menuBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+}
+
+.menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    z-index: 31;
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    padding: 0.375rem;
+    min-width: 180px;
+}
+
+.menuItem {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.625rem 0.75rem;
+    border: none;
+    background: none;
+    border-radius: 0.5rem;
+    color: #dc2626;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+}
+.menuItem:hover {
+    background: #fef2f2;
+}
+.menuItem span {
+    font-size: 20px;
+}

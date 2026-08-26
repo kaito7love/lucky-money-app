@@ -22,6 +22,7 @@ interface ShareRoomProps {
     remaining: number;
     totalEnvelopes: number;
     claims: Claim[];
+    onClosePool?: () => void;
 }
 
 const ShareRoom = ({
@@ -33,6 +34,7 @@ const ShareRoom = ({
     remaining,
     totalEnvelopes,
     claims,
+    onClosePool,
 }: ShareRoomProps) => {
     const initial = hostName.trim().charAt(0).toUpperCase() || "?";
 
@@ -69,7 +71,7 @@ const ShareRoom = ({
                 <div className={styles.patternOverlay}></div>
             </div>
 
-            <ShareHeader />
+            <ShareHeader onClosePool={onClosePool} />
 
             <main className={styles.mainContent}>
                 <div className={styles.leftColumn}>
