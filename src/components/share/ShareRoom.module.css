@@ -63,6 +63,44 @@
     overflow-y: auto;
 }
 
+/* Pure structural wrappers on mobile — invisible to layout so the flex
+   flow (including actionArea's margin-top:auto) is unchanged. */
+.leftColumn,
+.rightColumn {
+    display: contents;
+}
+
+@media (min-width: 1024px) {
+    .container {
+        max-width: 960px;
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+    .mainContent {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 2.5rem;
+        max-width: 900px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 2rem 2.5rem 3rem;
+        overflow-y: visible;
+    }
+    .leftColumn {
+        display: flex;
+        flex-direction: column;
+        flex: 0 0 380px;
+        position: sticky;
+        top: 2rem;
+    }
+    .rightColumn {
+        display: block;
+        flex: 1;
+        min-width: 0;
+    }
+}
+
 /* Ẩn scrollbar */
 .mainContent::-webkit-scrollbar {
     display: none;

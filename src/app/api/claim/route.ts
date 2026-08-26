@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-
-const PHONE_RE = /^\+?[0-9]{8,15}$/;
+import { isValidPhone, normalizePhone } from "@/lib/phone";
 
 const ERROR_MESSAGES: Record<string, string> = {
   INVALID_NAME: "Vui lòng nhập tên.",
@@ -22,11 +21,11 @@ export async function POST(req: NextRequest) {
 
   const qrToken = body.qr_token?.trim();
   const name = body.name?.trim();
-  const phone = body.phone?.trim().replace(/[\s-]/g, "");
+  const phone = body.phone ? normalizePhone(body.phone) : undefined;
 
   if (!qrToken) return NextResponse.json({ error: "MISSING_QR_TOKEN" }, { status: 400 });
   if (!name) return NextResponse.json({ error: "INVALID_NAME", message: ERROR_MESSAGES.INVALID_NAME }, { status: 400 });
-  if (!phone || !PHONE_RE.test(phone)) {
+  if (!phone || !isValidPhone(phone)) {
     return NextResponse.json({ error: "INVALID_PHONE", message: ERROR_MESSAGES.INVALID_PHONE }, { status: 400 });
   }
 

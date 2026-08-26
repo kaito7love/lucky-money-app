@@ -1,11 +1,37 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import styles from "./Profile.module.css";
 import ProfileHeader from "./ProfileHeader/ProfileHeader";
 import MenuItem from "./MenuItem/MenuItem";
+import { useSession } from "@/lib/SessionContext";
 
 const Profile = () => {
+    const router = useRouter();
+    const { user, loading, logout } = useSession();
+
+    if (loading) {
+        return <p className={styles.centerMessage}>Đang tải...</p>;
+    }
+
+    if (!user) {
+        return (
+            <div className={styles.signedOut}>
+                <span className="material-symbols-outlined">account_circle</span>
+                <p>Bạn chưa đăng nhập.</p>
+                <button
+                    className={styles.loginBtn}
+                    onClick={() => router.push("/auth")}
+                >
+                    Đăng nhập / Đăng ký
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className={styles.container}>
-            <ProfileHeader />
+            <ProfileHeader name={user.name} phone={user.phone} />
 
             <main className={styles.content}>
                 {/* Status Card */}
@@ -55,7 +81,13 @@ const Profile = () => {
 
                 {/* Logout */}
                 <div className={styles.logoutWrapper}>
-                    <button className={styles.logoutBtn}>
+                    <button
+                        className={styles.logoutBtn}
+                        onClick={async () => {
+                            await logout();
+                            router.push("/auth");
+                        }}
+                    >
                         <span className="material-symbols-outlined">
                             logout
                         </span>

@@ -1,0 +1,131 @@
+.sidebar {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        width: 260px;
+        flex-shrink: 0;
+        min-height: 100vh;
+        background: white;
+        border-right: 1px solid #f3f4f6;
+        padding: 1.5rem 1rem;
+        position: sticky;
+        top: 0;
+    }
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.5rem;
+    margin-bottom: 2rem;
+}
+.brandEmoji {
+    font-size: 1.75rem;
+}
+.brandName {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #ea2a33;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    text-decoration: none;
+    transition: background 0.15s;
+}
+.navItem:hover {
+    background: #fef2f2;
+}
+.navItemActive {
+    background: #fef2f2;
+    color: #ea2a33;
+}
+
+.account {
+    border-top: 1px solid #f3f4f6;
+    padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.accountInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0 0.5rem;
+}
+.avatarInitial {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #ea2a33;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.accountText {
+    min-width: 0;
+}
+.accountName {
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: #1b0e0e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.accountPhone {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+.logoutBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: 1px solid #f3f4f6;
+    border-radius: 0.75rem;
+    padding: 0.625rem 1rem;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+.logoutBtn:hover {
+    background: #fef2f2;
+    color: #ea2a33;
+}
+.loginLink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: #ea2a33;
+    color: white;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-decoration: none;
+}

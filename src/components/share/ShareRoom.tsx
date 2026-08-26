@@ -72,56 +72,60 @@ const ShareRoom = ({
             <ShareHeader />
 
             <main className={styles.mainContent}>
-                {/* User Info */}
-                <div className={styles.userSection}>
-                    <div className={styles.avatarWrapper}>
-                        <div className={styles.avatarInitial}>{initial}</div>
-                        <div className={styles.starBadge}>
-                            <span className="material-icons-round">star</span>
+                <div className={styles.leftColumn}>
+                    {/* User Info */}
+                    <div className={styles.userSection}>
+                        <div className={styles.avatarWrapper}>
+                            <div className={styles.avatarInitial}>{initial}</div>
+                            <div className={styles.starBadge}>
+                                <span className="material-icons-round">star</span>
+                            </div>
+                        </div>
+                        <h2 className={styles.roomName}>{poolName}</h2>
+                        <div className={styles.idBadge}>
+                            <span>Host: {hostName}</span>
+                            <button className={styles.copyBtn} onClick={handleCopy}>
+                                <span className="material-icons-round">
+                                    content_copy
+                                </span>
+                            </button>
                         </div>
                     </div>
-                    <h2 className={styles.roomName}>{poolName}</h2>
-                    <div className={styles.idBadge}>
-                        <span>Host: {hostName}</span>
-                        <button className={styles.copyBtn} onClick={handleCopy}>
-                            <span className="material-icons-round">
-                                content_copy
-                            </span>
+
+                    <QRCard
+                        qrDataUrl={qrDataUrl}
+                        statusText={statusText}
+                        remaining={remaining}
+                        totalEnvelopes={totalEnvelopes}
+                    />
+
+                    {/* Action Buttons */}
+                    <div className={styles.actionArea}>
+                        <button className={styles.primaryBtn} onClick={handleShare}>
+                            <span className="material-icons-round">share</span>
+                            Chia Sẻ Liên Kết
                         </button>
+
+                        <div className={styles.secondaryGroup}>
+                            <button className={styles.secondaryBtn} onClick={handleCopy}>
+                                <span className="material-icons-round">
+                                    content_copy
+                                </span>
+                                Sao chép mã
+                            </button>
+                            <button className={styles.secondaryBtn} onClick={handleDownload}>
+                                <span className="material-icons-round">
+                                    download
+                                </span>
+                                Lưu ảnh
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <QRCard
-                    qrDataUrl={qrDataUrl}
-                    statusText={statusText}
-                    remaining={remaining}
-                    totalEnvelopes={totalEnvelopes}
-                />
-
-                {/* Action Buttons */}
-                <div className={styles.actionArea}>
-                    <button className={styles.primaryBtn} onClick={handleShare}>
-                        <span className="material-icons-round">share</span>
-                        Chia Sẻ Liên Kết
-                    </button>
-
-                    <div className={styles.secondaryGroup}>
-                        <button className={styles.secondaryBtn} onClick={handleCopy}>
-                            <span className="material-icons-round">
-                                content_copy
-                            </span>
-                            Sao chép mã
-                        </button>
-                        <button className={styles.secondaryBtn} onClick={handleDownload}>
-                            <span className="material-icons-round">
-                                download
-                            </span>
-                            Lưu ảnh
-                        </button>
-                    </div>
+                <div className={styles.rightColumn}>
+                    <ClaimsList claims={claims} />
                 </div>
-
-                <ClaimsList claims={claims} />
             </main>
         </div>
     );

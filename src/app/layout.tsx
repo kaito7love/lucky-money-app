@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro } from "next/font/google";
+import { SessionProvider } from "@/lib/SessionContext";
+import Sidebar from "@/components/layout/Sidebar";
 import "./globals.css";
 
 const beVietnamPro = Be_Vietnam_Pro({
@@ -31,9 +33,14 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen antialiased">
-        <div className="mx-auto max-w-md min-h-screen flex flex-col">
-          {children}
-        </div>
+        <SessionProvider>
+          <div className="lg:flex lg:min-h-screen">
+            <Sidebar />
+            <div className="mx-auto w-full max-w-md min-h-screen flex flex-col lg:max-w-none lg:flex-1 lg:mx-0">
+              {children}
+            </div>
+          </div>
+        </SessionProvider>
       </body>
     </html>
   );
