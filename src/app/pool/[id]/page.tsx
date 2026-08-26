@@ -38,6 +38,13 @@ const STATUS_LABEL: Record<string, string> = {
   expired: "Đã hết hạn",
 };
 
+const ERROR_MESSAGES: Record<string, string> = {
+  MISSING_HOST_TOKEN: "Thiếu quyền quản lý cho lì xì này.",
+  POOL_NOT_FOUND: "Không tìm thấy lì xì này.",
+  FORBIDDEN: "Bạn không có quyền quản lý lì xì này trên thiết bị này.",
+  ENVELOPES_FETCH_FAILED: "Không thể tải danh sách bao lì xì.",
+};
+
 /** Pure fetch + parse, no state — callers apply the result via .then(). */
 async function fetchPoolData(id: string, hostToken: string): Promise<{ ok: boolean; json: PoolData & { error?: string } }> {
   const res = await fetch(`/api/pools/${id}?host_token=${hostToken}`);
@@ -61,7 +68,7 @@ export default function PoolHostPage() {
     if (!hostToken) return;
     fetchPoolData(params.id, hostToken).then(({ ok, json }) => {
       if (!ok) {
-        setError(json.error ?? "Không thể tải dữ liệu");
+        setError((json.error && ERROR_MESSAGES[json.error]) ?? "Không thể tải dữ liệu, vui lòng thử lại.");
         return;
       }
       setData(json);

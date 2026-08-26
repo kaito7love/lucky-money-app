@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { effectivePoolStatus } from "@/lib/poolStatus";
 
 function maskPhone(phone: string | null): string | null {
   if (!phone || phone.length < 4) return phone;
@@ -41,7 +42,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const claimed = envelopes.filter((e) => e.is_claimed);
 
   return NextResponse.json({
-    pool: publicPool,
+    pool: { ...publicPool, status: await effectivePoolStatus(pool) },
     remaining: envelopes.length - claimed.length,
     total_envelopes: envelopes.length,
     claims: claimed.map((e) => ({

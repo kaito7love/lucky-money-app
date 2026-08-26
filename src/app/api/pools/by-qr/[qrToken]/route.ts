@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { effectivePoolStatus } from "@/lib/poolStatus";
 
 /** Public view for guests scanning the QR — no host_token, no claimant list. */
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ qrToken: string }> }) {
@@ -26,7 +27,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ qrT
     host_name: pool.host_name,
     envelope_count: pool.envelope_count,
     remaining: remaining ?? 0,
-    status: pool.status,
+    status: await effectivePoolStatus(pool),
     expires_at: pool.expires_at,
   });
 }
