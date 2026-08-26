@@ -3,17 +3,22 @@ import styles from "./RoomCard.module.css";
 interface RoomProps {
     name: string;
     desc: string;
-    members: number;
-    time: string;
-    img: string;
+    countLabel: string;
+    timeLabel: string;
+    img?: string;
     hasBadge?: boolean;
+    onClick?: () => void;
 }
 
-const RoomCard = ({ name, desc, members, time, img, hasBadge }: RoomProps) => (
-    <div className={styles.card}>
+const RoomCard = ({ name, desc, countLabel, timeLabel, img, hasBadge, onClick }: RoomProps) => (
+    <div className={styles.card} onClick={onClick}>
         <div className={styles.avatarSection}>
             <div className={styles.avatarCircle}>
-                <img src={img} className={styles.img} alt={name} />
+                {img ? (
+                    <img src={img} className={styles.img} alt={name} />
+                ) : (
+                    <div className={styles.avatarInitial}>{name.trim().charAt(0).toUpperCase() || "?"}</div>
+                )}
             </div>
             {hasBadge && (
                 <div className={styles.badge}>
@@ -31,11 +36,11 @@ const RoomCard = ({ name, desc, members, time, img, hasBadge }: RoomProps) => (
                         className="material-symbols-outlined"
                         style={{ fontSize: "14px" }}
                     >
-                        group
+                        redeem
                     </span>{" "}
-                    {members}
+                    {countLabel}
                 </span>
-                <span>• Active {time}</span>
+                <span>{timeLabel}</span>
             </div>
         </div>
         <span className={`material-symbols-outlined ${styles.arrow}`}>

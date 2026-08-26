@@ -90,20 +90,16 @@
     font-weight: 700;
     color: #1b0e0e;
 }
-.sortBtn {
-    background: none;
-    border: none;
-    color: #ea2a33;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
 .roomList {
     display: flex;
     flex-direction: column;
     gap: 14px;
+}
+.roomListMessage {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 0.875rem;
+    padding: 1.5rem 0;
 }
 .nav {
     position: fixed;

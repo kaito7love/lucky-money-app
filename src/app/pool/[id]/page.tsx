@@ -5,6 +5,7 @@ import QRCode from "qrcode";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useLocalStorageValue } from "@/lib/useLocalStorageValue";
 import { useRouteParams } from "@/lib/useRouteParams";
+import { POOL_STATUS_LABEL } from "@/lib/poolStatusLabel";
 import ShareRoom from "@/components/share/ShareRoom";
 
 interface Claim {
@@ -31,12 +32,6 @@ interface PoolData {
   total_envelopes: number;
   claims: Claim[];
 }
-
-const STATUS_LABEL: Record<string, string> = {
-  active: "Đang mở",
-  completed: "Đã hết bao",
-  expired: "Đã hết hạn",
-};
 
 const ERROR_MESSAGES: Record<string, string> = {
   MISSING_HOST_TOKEN: "Thiếu quyền quản lý cho lì xì này.",
@@ -128,7 +123,7 @@ export default function PoolHostPage() {
     <ShareRoom
       poolName={data.pool.name}
       hostName={data.pool.host_name}
-      statusText={STATUS_LABEL[data.pool.status] ?? data.pool.status}
+      statusText={POOL_STATUS_LABEL[data.pool.status] ?? data.pool.status}
       qrDataUrl={qrDataUrl}
       claimUrl={claimUrl}
       remaining={data.remaining}
