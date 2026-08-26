@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { formatVnd } from "@/lib/formatVnd";
+import { useBackOrHome } from "@/lib/useBackOrHome";
 
 interface Transaction {
   id: string;
@@ -13,6 +14,7 @@ interface Transaction {
 }
 
 export default function WalletPage() {
+  const goBack = useBackOrHome();
   const [phone, setPhone] = useState("");
   const [balance, setBalance] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -43,7 +45,7 @@ export default function WalletPage() {
   return (
     <main className="flex-1 p-6">
       <button
-        onClick={() => window.history.back()}
+        onClick={goBack}
         className="w-10 h-10 -ml-2 mb-3 flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-100"
         aria-label="Quay lại"
       >
