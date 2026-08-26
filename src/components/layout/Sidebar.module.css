@@ -116,16 +116,3 @@
     background: #fef2f2;
     color: #ea2a33;
 }
-.loginLink {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    background: #ea2a33;
-    color: white;
-    border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
-    font-weight: 700;
-    font-size: 0.875rem;
-    text-decoration: none;
-}

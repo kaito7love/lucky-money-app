@@ -18,6 +18,9 @@ const Sidebar = () => {
     const router = useRouter();
     const { user, loading, logout } = useSession();
 
+    // No account, no sidebar — desktop looks exactly like mobile until signed in.
+    if (loading || !user) return null;
+
     return (
         <aside className={styles.sidebar}>
             <div className={styles.brand}>
@@ -42,34 +45,25 @@ const Sidebar = () => {
             </nav>
 
             <div className={styles.account}>
-                {loading ? null : user ? (
-                    <>
-                        <div className={styles.accountInfo}>
-                            <div className={styles.avatarInitial}>
-                                {user.name.trim().charAt(0).toUpperCase() || "?"}
-                            </div>
-                            <div className={styles.accountText}>
-                                <p className={styles.accountName}>{user.name}</p>
-                                <p className={styles.accountPhone}>{user.phone}</p>
-                            </div>
-                        </div>
-                        <button
-                            className={styles.logoutBtn}
-                            onClick={() => {
-                                logout();
-                                router.push("/auth");
-                            }}
-                        >
-                            <span className="material-symbols-outlined">logout</span>
-                            Đăng xuất
-                        </button>
-                    </>
-                ) : (
-                    <Link href="/auth" className={styles.loginLink}>
-                        <span className="material-symbols-outlined">login</span>
-                        Đăng nhập
-                    </Link>
-                )}
+                <div className={styles.accountInfo}>
+                    <div className={styles.avatarInitial}>
+                        {user.name.trim().charAt(0).toUpperCase() || "?"}
+                    </div>
+                    <div className={styles.accountText}>
+                        <p className={styles.accountName}>{user.name}</p>
+                        <p className={styles.accountPhone}>{user.phone}</p>
+                    </div>
+                </div>
+                <button
+                    className={styles.logoutBtn}
+                    onClick={() => {
+                        logout();
+                        router.push("/auth");
+                    }}
+                >
+                    <span className="material-symbols-outlined">logout</span>
+                    Đăng xuất
+                </button>
             </div>
         </aside>
     );
