@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./ChatRoom.module.css";
 import ChatHeader from "./ChatHeader/ChatHeader";
 import MessageItem from "./MessageItem/MessageItem";
@@ -22,6 +22,7 @@ const ChatRoom = () => {
     const { user } = useSession();
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [loading, setLoading] = useState(true);
+    const bottomRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         fetch("/api/chat/messages")
@@ -29,6 +30,11 @@ const ChatRoom = () => {
             .then((data) => setMessages(data.messages ?? []))
             .finally(() => setLoading(false));
     }, []);
+
+    useEffect(() => {
+        if (loading) return;
+        bottomRef.current?.scrollIntoView({ block: "end" });
+    }, [loading, messages]);
 
     return (
         <div className={styles.container}>
@@ -80,6 +86,7 @@ const ChatRoom = () => {
                             />
                         ))
                     )}
+                    <div ref={bottomRef} />
                 </div>
             </main>
 
