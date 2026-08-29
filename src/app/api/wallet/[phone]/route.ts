@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { normalizePhone } from "@/lib/phone";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ phone: string }> }) {
   const { phone: rawPhone } = await params;
-  const phone = decodeURIComponent(rawPhone).trim();
+  const phone = normalizePhone(decodeURIComponent(rawPhone));
   if (!phone) {
     return NextResponse.json({ error: "MISSING_PHONE" }, { status: 400 });
   }

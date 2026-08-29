@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { formatVnd } from "@/lib/formatVnd";
 import { useBackOrHome } from "@/lib/useBackOrHome";
+import { normalizePhone } from "@/lib/phone";
 
 interface Transaction {
   id: string;
@@ -26,7 +27,7 @@ export default function WalletPage() {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch(`/api/wallet/${encodeURIComponent(phone.trim())}`);
+      const res = await fetch(`/api/wallet/${encodeURIComponent(normalizePhone(phone))}`);
       const data = await res.json();
       if (!res.ok) {
         setError("Có lỗi xảy ra, vui lòng thử lại.");
@@ -59,6 +60,7 @@ export default function WalletPage() {
         <input
           className="flex-1 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-envelope/20 focus:border-envelope"
           placeholder="09xxxxxxxx"
+          type="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           required
