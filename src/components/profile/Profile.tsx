@@ -30,7 +30,9 @@ const Profile = () => {
                 >
                     <span className="material-symbols-outlined">arrow_back</span>
                 </button>
-                <span className="material-symbols-outlined">account_circle</span>
+                <span className={`material-symbols-outlined ${styles.signedOutIcon}`}>
+                    account_circle
+                </span>
                 <p>Bạn chưa đăng nhập.</p>
                 <button
                     className={styles.loginBtn}

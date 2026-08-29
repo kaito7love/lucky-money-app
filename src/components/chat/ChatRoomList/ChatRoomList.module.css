@@ -57,7 +57,12 @@
     padding: 2rem;
     text-align: center;
 }
-.signedOut span.material-symbols-outlined {
+/* Two classes deep on purpose. Google's material-symbols-outlined rule sets
+   font-size: 24px at (0,1,0) and its stylesheet is linked after this chunk,
+   so a lone .signedOutIcon ties on specificity and loses on order. Matching
+   the global class here instead would need :global() to survive module
+   hashing, and would then also blow up the back arrow. */
+.signedOut .signedOutIcon {
     font-size: 3rem;
     color: #d1d5db;
 }

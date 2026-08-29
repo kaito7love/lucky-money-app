@@ -49,7 +49,7 @@ const ChatRoomList = () => {
                 >
                     <span className="material-symbols-outlined">arrow_back</span>
                 </button>
-                <span className="material-symbols-outlined">forum</span>
+                <span className={`material-symbols-outlined ${styles.signedOutIcon}`}>forum</span>
                 <p>Đăng nhập để xem danh sách trò chuyện.</p>
                 <button className={styles.loginBtn} onClick={() => router.push("/auth")}>
                     Đăng nhập / Đăng ký
