@@ -84,7 +84,7 @@ const LixiComposer = ({ roomId, onCreated, onClose }: LixiComposerProps) => {
 
                 <form className={styles.form} onSubmit={handleSubmit}>
                     <div className={styles.field}>
-                        <label>Tên lì xì</label>
+                        <label>Ghi lời chúc</label>
                         <input
                             type="text"
                             placeholder="Chúc mừng năm mới!"
@@ -118,6 +118,11 @@ const LixiComposer = ({ roomId, onCreated, onClose }: LixiComposerProps) => {
                             />
                         </div>
                     </div>
+
+                    <p className={styles.hintText}>
+                        <span className={`material-symbols-outlined ${styles.hintIcon}`}>timer</span>
+                        Lì xì trong phòng chat hết hạn sau 24 giờ.
+                    </p>
 
                     {error && <p className={styles.errorText}>{error}</p>}
 

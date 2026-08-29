@@ -23,6 +23,13 @@ interface ChatMessage {
 
 const MESSAGES_FILE = "chat-messages.json";
 
+/** Lì xì sent into a chat expires a day after it's posted, the way a real
+ * red envelope handed out at a gathering stops being live once the gathering
+ * ends. The in-chat composer deliberately has no expiry field — keeping the
+ * quick-send form to three inputs — so the window is fixed here. Pools made
+ * from /create still choose their own. */
+const CHAT_LIXI_EXPIRY_HOURS = 24;
+
 /** A reasonable [min, max] per-envelope range around the average, derived
  * automatically since the in-chat quick-create form only asks for a total
  * and an envelope count (no min/max fields). Guaranteed to satisfy
@@ -81,6 +88,7 @@ export async function POST(req: NextRequest) {
             mode: "random",
             min_value: min,
             max_value: max,
+            expires_in_hours: CHAT_LIXI_EXPIRY_HOURS,
         });
     } catch (err) {
         const code = err instanceof Error ? err.message : "POOL_CREATE_FAILED";
