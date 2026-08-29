@@ -4,7 +4,6 @@
 }
 .header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
     padding: 0 0.5rem;
@@ -13,14 +12,6 @@
     font-size: 0.875rem;
     font-weight: 700;
     color: #111;
-}
-.header button {
-    font-size: 0.75rem;
-    color: #f42525;
-    font-weight: 500;
-    border: none;
-    background: none;
-    cursor: pointer;
 }
 .scrollArea {
     display: flex;

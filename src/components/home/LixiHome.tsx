@@ -108,6 +108,15 @@ const LixiHome = () => {
                     </button>
                     <button
                         className={styles.navItem}
+                        onClick={() => router.push("/chat")}
+                    >
+                        <span className="material-symbols-outlined">
+                            forum
+                        </span>
+                        <span>Trò chuyện</span>
+                    </button>
+                    <button
+                        className={styles.navItem}
                         onClick={() => router.push("/wallet")}
                     >
                         <span className="material-symbols-outlined">

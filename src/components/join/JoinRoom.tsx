@@ -38,13 +38,19 @@ const JoinRoom = () => {
         router.push(`/claim/${token}`);
     };
 
+    const handleScan = (scannedText: string) => {
+        const token = extractToken(scannedText);
+        if (!token) return;
+        router.push(`/claim/${token}`);
+    };
+
     return (
         <div className={styles.page}>
             <JoinHeader />
 
             <main className={styles.main}>
                 <div className={styles.heroContainer}>
-                    <QRScannerHero />
+                    <QRScannerHero onScan={handleScan} />
                 </div>
 
                 <div className={styles.divider}>

@@ -9,6 +9,7 @@ const NAV_ITEMS = [
     { href: "/", icon: "home", label: "Trang chủ" },
     { href: "/create", icon: "redeem", label: "Tạo phòng" },
     { href: "/join", icon: "qr_code_scanner", label: "Tham gia" },
+    { href: "/chat", icon: "forum", label: "Trò chuyện" },
     { href: "/wallet", icon: "account_balance_wallet", label: "Ví" },
     { href: "/profile", icon: "person", label: "Hồ sơ" },
 ];
