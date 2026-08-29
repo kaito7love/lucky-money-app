@@ -73,7 +73,7 @@
 }
 
 @media (min-width: 1024px) {
-    .nav {
+    .navAutoHide {
         display: none;
     }
 }

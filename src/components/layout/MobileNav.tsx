@@ -17,7 +17,7 @@ const MobileNav = () => {
     const profileActive = pathname.startsWith("/profile");
 
     return (
-        <nav className={styles.nav}>
+        <nav className={`${styles.nav} ${user ? styles.navAutoHide : ""}`}>
             <div className={styles.navInner}>
                 {NAV_ITEMS.map((item) => {
                     const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
