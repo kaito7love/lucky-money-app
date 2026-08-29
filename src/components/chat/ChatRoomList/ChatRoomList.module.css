@@ -1,0 +1,136 @@
+.page {
+    min-height: 100vh;
+    background: #fff9f9;
+}
+:global(.dark) .page {
+    background: #211111;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: rgba(255, 249, 249, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #f3e7e8;
+}
+.backBtn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #1b0e0e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.backBtn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+.title {
+    flex: 1;
+    text-align: center;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1b0e0e;
+    margin: 0;
+    margin-right: 40px;
+}
+.spacer {
+    width: 40px;
+}
+
+.main {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 640px;
+    margin: 0 auto;
+}
+.centerMessage {
+    text-align: center;
+    color: #9ca3af;
+    padding: 3rem 1rem;
+}
+
+.card {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    width: 100%;
+    text-align: left;
+    background: white;
+    border: none;
+    border-radius: 1.25rem;
+    padding: 0.875rem 1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 20px -2px rgba(234, 42, 51, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px -2px rgba(234, 42, 51, 0.15);
+}
+.avatar {
+    flex-shrink: 0;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 50%;
+    background: #ea2a33;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+.info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.topRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+.name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1b0e0e;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.time {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+.bottomRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+.preview {
+    font-size: 0.875rem;
+    color: #6b7280;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.members {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: #9ca3af;
+}

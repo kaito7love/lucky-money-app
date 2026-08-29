@@ -5,15 +5,12 @@ import { useBackOrHome } from "@/lib/useBackOrHome";
 interface ChatHeaderProps {
     title: string;
     members: number;
-    avatarUrl: string;
+    onBack?: () => void;
 }
 
-const ChatHeader: React.FC<ChatHeaderProps> = ({
-    title,
-    members,
-    avatarUrl,
-}) => {
-    const goBack = useBackOrHome();
+const ChatHeader: React.FC<ChatHeaderProps> = ({ title, members, onBack }) => {
+    const goHome = useBackOrHome();
+    const goBack = onBack ?? goHome;
 
     return (
         <header className={styles.header}>
@@ -22,10 +19,9 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
             </button>
             <div className={styles.info}>
                 <div className={styles.avatarWrapper}>
-                    <div
-                        className={styles.avatar}
-                        style={{ backgroundImage: `url(${avatarUrl})` }}
-                    />
+                    <div className={styles.avatar}>
+                        {title.trim().charAt(0).toUpperCase() || "?"}
+                    </div>
                     <div className={styles.onlineStatus} />
                 </div>
                 <div>

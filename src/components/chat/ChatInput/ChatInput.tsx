@@ -14,10 +14,11 @@ interface ChatMessage {
 }
 
 interface ChatInputProps {
+    roomId: string;
     onSent: (message: ChatMessage) => void;
 }
 
-const ChatInput = ({ onSent }: ChatInputProps) => {
+const ChatInput = ({ roomId, onSent }: ChatInputProps) => {
     const { user, token } = useSession();
     const router = useRouter();
     const [text, setText] = useState("");
@@ -44,7 +45,7 @@ const ChatInput = ({ onSent }: ChatInputProps) => {
             const res = await fetch("/api/chat/messages", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ session_token: token, text: trimmed }),
+                body: JSON.stringify({ room_id: roomId, session_token: token, text: trimmed }),
             });
             if (res.ok) {
                 const data = await res.json();

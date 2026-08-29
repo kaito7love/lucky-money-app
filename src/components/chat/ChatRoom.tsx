@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./ChatRoom.module.css";
 import ChatHeader from "./ChatHeader/ChatHeader";
 import MessageItem from "./MessageItem/MessageItem";
@@ -9,6 +10,7 @@ import ChatInput from "./ChatInput/ChatInput";
 import ActiveLixiCard from "./LiXiEventCard/ActiveLixiCard";
 import LiXiCard from "./LiXiEventCard/LiXiCard";
 import { useSession } from "@/lib/SessionContext";
+import { getChatRoom } from "@/lib/chatRooms";
 
 interface ChatMessage {
     id: string;
@@ -18,18 +20,34 @@ interface ChatMessage {
     createdAt: string;
 }
 
-const ChatRoom = () => {
+interface ChatRoomProps {
+    roomId: string;
+}
+
+const ChatRoom = ({ roomId }: ChatRoomProps) => {
     const { user } = useSession();
+    const router = useRouter();
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [loading, setLoading] = useState(true);
     const bottomRef = useRef<HTMLDivElement>(null);
 
+    const room = getChatRoom(roomId);
+
     useEffect(() => {
-        fetch("/api/chat/messages")
+        let cancelled = false;
+        fetch(`/api/chat/messages?room_id=${roomId}`)
             .then((res) => res.json())
-            .then((data) => setMessages(data.messages ?? []))
-            .finally(() => setLoading(false));
-    }, []);
+            .then((data) => {
+                if (cancelled) return;
+                setMessages(data.messages ?? []);
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [roomId]);
 
     useEffect(() => {
         if (loading) return;
@@ -39,9 +57,9 @@ const ChatRoom = () => {
     return (
         <div className={styles.container}>
             <ChatHeader
-                title="Family Group - Tết 2026"
-                members={12}
-                avatarUrl="https://lh3.googleusercontent.com/aida-public/AB6AXuDeps3lMt9x3VkVqfN165zaLwImreFEed4zMwss4B9V_P2lmB9RNS0Xy_MQkXeg-Y9oGLHpsTh3HkrK0A1Kmpmg4XHgiTIuxRcITZZaFELtxIHRydhLdhFruRs1wjqLC1jcDmebkA8y2-5s6XFpe9YQcw5lm4_ccVjhQbKiWWlcxK-tNJZRYN8bHM4KhF64DNEnErqDpSq0q9uC_vbLcfbx6YcQvdy-TFjAeErMaDNAQHC_qkvcbf8dYnu_Hq_jcm_oMoFVIpgIfyLy"
+                title={room?.name ?? "Trò chuyện"}
+                members={room?.memberCount ?? 0}
+                onBack={() => router.push("/chat")}
             />
 
             <main className={styles.scrollArea}>
@@ -90,7 +108,10 @@ const ChatRoom = () => {
                 </div>
             </main>
 
-            <ChatInput onSent={(message) => setMessages((prev) => [...prev, message])} />
+            <ChatInput
+                roomId={roomId}
+                onSent={(message) => setMessages((prev) => [...prev, message])}
+            />
         </div>
     );
 };
