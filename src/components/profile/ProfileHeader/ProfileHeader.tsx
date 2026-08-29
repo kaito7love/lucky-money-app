@@ -10,10 +10,8 @@ const ProfileHeader = ({ name, phone }: ProfileHeaderProps) => {
     const goBack = useBackOrHome();
 
     return (
-        <div className={styles.header}>
-            <div className={styles.patternOverlay}></div>
-
-            <div className={styles.topBar}>
+        <>
+            <div className={styles.stickyBar}>
                 <button className={styles.backBtn} onClick={goBack}>
                     <span className="material-symbols-outlined">arrow_back</span>
                 </button>
@@ -21,19 +19,23 @@ const ProfileHeader = ({ name, phone }: ProfileHeaderProps) => {
                 <div className={styles.spacer}></div>
             </div>
 
-            <div className={styles.profileInfo}>
-                <div className={styles.avatarWrapper}>
-                    <div className={styles.avatarInitial}>
-                        {name.trim().charAt(0).toUpperCase() || "?"}
+            <div className={styles.header}>
+                <div className={styles.patternOverlay}></div>
+
+                <div className={styles.profileInfo}>
+                    <div className={styles.avatarWrapper}>
+                        <div className={styles.avatarInitial}>
+                            {name.trim().charAt(0).toUpperCase() || "?"}
+                        </div>
+                        <div className={styles.onlineStatus}></div>
                     </div>
-                    <div className={styles.onlineStatus}></div>
-                </div>
-                <div className={styles.textInfo}>
-                    <p className={styles.userName}>{name}</p>
-                    <p className={styles.userPhone}>{phone}</p>
+                    <div className={styles.textInfo}>
+                        <p className={styles.userName}>{name}</p>
+                        <p className={styles.userPhone}>{phone}</p>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 
