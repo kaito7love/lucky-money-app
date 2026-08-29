@@ -6,6 +6,7 @@ import styles from "./ChatRoomList.module.css";
 import { useBackOrHome } from "@/lib/useBackOrHome";
 import { useSession } from "@/lib/SessionContext";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
+import MobileNav from "@/components/layout/MobileNav";
 
 interface ChatRoomSummary {
     id: string;
@@ -30,7 +31,12 @@ const ChatRoomList = () => {
     }, [user]);
 
     if (sessionLoading) {
-        return <p className={styles.centerMessage}>Đang tải...</p>;
+        return (
+            <>
+                <p className={styles.centerMessage}>Đang tải...</p>
+                <MobileNav />
+            </>
+        );
     }
 
     if (!user) {
@@ -48,6 +54,7 @@ const ChatRoomList = () => {
                 <button className={styles.loginBtn} onClick={() => router.push("/auth")}>
                     Đăng nhập / Đăng ký
                 </button>
+                <MobileNav />
             </div>
         );
     }
@@ -95,6 +102,8 @@ const ChatRoomList = () => {
                     ))
                 )}
             </main>
+
+            <MobileNav />
         </div>
     );
 };

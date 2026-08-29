@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import styles from "./LixiHome.module.css";
 import Header from "./Header/HomeHeader";
 import RoomCard from "./RoomCard/RoomCard";
+import MobileNav from "@/components/layout/MobileNav";
 import { useMyRooms } from "@/lib/useMyRooms";
 import { useSession } from "@/lib/SessionContext";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
@@ -97,44 +98,7 @@ const LixiHome = () => {
                 </div>
             </main>
 
-            {/* Navigation */}
-            <nav className={styles.nav}>
-                <div className={styles.navInner}>
-                    <button className={styles.navItemActive}>
-                        <span className="material-symbols-outlined filled">
-                            home
-                        </span>
-                        <span>Trang chủ</span>
-                    </button>
-                    <button
-                        className={styles.navItem}
-                        onClick={() => router.push("/chat")}
-                    >
-                        <span className="material-symbols-outlined">
-                            forum
-                        </span>
-                        <span>Trò chuyện</span>
-                    </button>
-                    <button
-                        className={styles.navItem}
-                        onClick={() => router.push("/wallet")}
-                    >
-                        <span className="material-symbols-outlined">
-                            account_balance_wallet
-                        </span>
-                        <span>Ví</span>
-                    </button>
-                    <button
-                        className={styles.navItem}
-                        onClick={() => router.push("/profile")}
-                    >
-                        <span className="material-symbols-outlined">
-                            settings
-                        </span>
-                        <span>Cài đặt</span>
-                    </button>
-                </div>
-            </nav>
+            <MobileNav />
         </div>
     );
 };

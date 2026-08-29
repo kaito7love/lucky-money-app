@@ -5,13 +5,19 @@ import styles from "./Profile.module.css";
 import ProfileHeader from "./ProfileHeader/ProfileHeader";
 import MenuItem from "./MenuItem/MenuItem";
 import { useSession } from "@/lib/SessionContext";
+import MobileNav from "@/components/layout/MobileNav";
 
 const Profile = () => {
     const router = useRouter();
     const { user, loading, logout } = useSession();
 
     if (loading) {
-        return <p className={styles.centerMessage}>Đang tải...</p>;
+        return (
+            <>
+                <p className={styles.centerMessage}>Đang tải...</p>
+                <MobileNav />
+            </>
+        );
     }
 
     if (!user) {
@@ -32,6 +38,7 @@ const Profile = () => {
                 >
                     Đăng nhập / Đăng ký
                 </button>
+                <MobileNav />
             </div>
         );
     }
@@ -105,6 +112,8 @@ const Profile = () => {
                     </p>
                 </div>
             </main>
+
+            <MobileNav />
         </div>
     );
 };
