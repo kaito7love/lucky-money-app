@@ -34,6 +34,7 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
     const room = getChatRoom(roomId);
 
     useEffect(() => {
+        if (!room) return;
         let cancelled = false;
         fetch(`/api/chat/messages?room_id=${roomId}`)
             .then((res) => res.json())
@@ -47,18 +48,29 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
         return () => {
             cancelled = true;
         };
-    }, [roomId]);
+    }, [roomId, room]);
 
     useEffect(() => {
         if (loading) return;
         bottomRef.current?.scrollIntoView({ block: "end" });
     }, [loading, messages]);
 
+    if (!room) {
+        return (
+            <div className={styles.notFound}>
+                <p>Không tìm thấy phòng chat này.</p>
+                <button className={styles.notFoundBtn} onClick={() => router.push("/chat")}>
+                    Về danh sách trò chuyện
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className={styles.container}>
             <ChatHeader
-                title={room?.name ?? "Trò chuyện"}
-                members={room?.memberCount ?? 0}
+                title={room.name}
+                members={room.memberCount}
                 onBack={() => router.push("/chat")}
             />
 
