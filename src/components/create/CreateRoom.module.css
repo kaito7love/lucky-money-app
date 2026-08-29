@@ -3,7 +3,6 @@
     min-height: 100vh;
     background: #f8f6f6;
     color: #1b0e0e;
-    overflow-x: hidden;
 }
 .bgPattern {
     position: absolute;

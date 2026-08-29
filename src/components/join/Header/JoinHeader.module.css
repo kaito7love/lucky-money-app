@@ -3,8 +3,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 1rem;
-    sticky: top;
-    z-index: 20;
+    flex-shrink: 0;
+    z-index: 30;
     background: rgba(248, 245, 245, 0.95);
     backdrop-filter: blur(8px);
 }

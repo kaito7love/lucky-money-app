@@ -1,14 +1,19 @@
+.stickyBar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    padding: 1rem 1.25rem;
+    background: #ea2a33;
+}
 .header {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 3rem 1.5rem 1.5rem;
+    padding: 0.5rem 1.5rem 1.5rem;
 }
 .backButton {
-    position: absolute;
-    top: 1.25rem;
-    left: 1.25rem;
     width: 40px;
     height: 40px;
     border-radius: 50%;

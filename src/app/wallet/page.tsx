@@ -47,7 +47,7 @@ export default function WalletPage() {
     <main className="flex-1 p-6">
       <button
         onClick={goBack}
-        className="w-10 h-10 -ml-2 mb-3 flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-100"
+        className="sticky top-2 z-30 w-10 h-10 -ml-2 mb-3 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-700 hover:bg-gray-100"
         aria-label="Quay lại"
       >
         <span className="material-symbols-outlined">arrow_back</span>
