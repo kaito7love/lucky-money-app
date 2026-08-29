@@ -11,7 +11,9 @@ type Mode = "random" | "fixed";
 
 const ERROR_MESSAGES: Record<string, string> = {
     MISSING_NAME: "Vui lòng nhập tên phòng.",
-    MISSING_HOST_NAME: "Vui lòng nhập tên của bạn.",
+    MISSING_HOST_NAME: "Vui lòng nhập tên của bạn (số điện thoại này chưa có tài khoản).",
+    INVALID_HOST_PHONE: "Số điện thoại không hợp lệ.",
+    INVALID_PIN: "Mã PIN phải gồm 4-6 chữ số.",
     INVALID_TOTAL_AMOUNT: "Tổng số tiền không hợp lệ.",
     INVALID_ENVELOPE_COUNT: "Số bao lì xì không hợp lệ (tối đa 500).",
     INVALID_MODE: "Cách chia bao lì xì không hợp lệ.",
@@ -30,6 +32,7 @@ const CreateRoom = () => {
     const [name, setName] = useState("");
     const [greeting, setGreeting] = useState("");
     const [hostName, setHostName] = useState("");
+    const [hostPhone, setHostPhone] = useState("");
     const [totalAmount, setTotalAmount] = useState("");
     const [envelopeCount, setEnvelopeCount] = useState("");
     const [mode, setMode] = useState<Mode>("random");
@@ -37,6 +40,8 @@ const CreateRoom = () => {
     const [maxValue, setMaxValue] = useState("");
     const [fixedValuesText, setFixedValuesText] = useState("");
     const [expiresInHours, setExpiresInHours] = useState("");
+    const [isPrivate, setIsPrivate] = useState(false);
+    const [pin, setPin] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
@@ -47,10 +52,15 @@ const CreateRoom = () => {
         const body: Record<string, unknown> = {
             name,
             host_name: hostName,
+            host_phone: hostPhone,
             total_amount: Number(totalAmount),
             envelope_count: Number(envelopeCount),
             mode,
+            is_private: isPrivate,
         };
+        if (isPrivate) {
+            body.pin = pin;
+        }
 
         if (mode === "random") {
             body.min_value = Number(minValue);
@@ -108,13 +118,23 @@ const CreateRoom = () => {
                     </div>
 
                     <div className={styles.inputGroup}>
-                        <label>Tên của bạn (Host)</label>
+                        <label>Số điện thoại của bạn (Host)</label>
+                        <input
+                            type="tel"
+                            placeholder="09xxxxxxxx"
+                            value={hostPhone}
+                            onChange={(e) => setHostPhone(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                        <label>Tên của bạn (chỉ cần nếu SĐT này chưa có tài khoản)</label>
                         <input
                             type="text"
                             placeholder="Nguyễn Văn A"
                             value={hostName}
                             onChange={(e) => setHostName(e.target.value)}
-                            required
                         />
                     </div>
 
@@ -229,7 +249,12 @@ const CreateRoom = () => {
                         />
                     </div>
 
-                    <PrivacySettings />
+                    <PrivacySettings
+                        isPrivate={isPrivate}
+                        onToggle={setIsPrivate}
+                        pin={pin}
+                        onPinChange={setPin}
+                    />
 
                     {error && <p className={styles.errorText}>{error}</p>}
 

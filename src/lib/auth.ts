@@ -1,5 +1,8 @@
-import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from "crypto";
+import { randomUUID } from "crypto";
 import { readJson, writeJson } from "@/lib/jsonDb";
+import { hashSecret, verifySecret } from "@/lib/hash";
+
+const DEFAULT_PASSWORD = "123456";
 
 export interface User {
     id: string;
@@ -28,20 +31,6 @@ function toPublicUser(user: User): PublicUser {
     return { id: user.id, name: user.name, phone: user.phone };
 }
 
-function hashPassword(password: string): string {
-    const salt = randomBytes(16).toString("hex");
-    const hash = scryptSync(password, salt, 64).toString("hex");
-    return `${salt}:${hash}`;
-}
-
-function verifyPassword(password: string, stored: string): boolean {
-    const [salt, hash] = stored.split(":");
-    if (!salt || !hash) return false;
-    const candidate = scryptSync(password, salt, 64);
-    const expected = Buffer.from(hash, "hex");
-    return candidate.length === expected.length && timingSafeEqual(candidate, expected);
-}
-
 export async function findUserByPhone(phone: string): Promise<User | null> {
     const users = await readJson<User[]>(USERS_FILE, []);
     return users.find((u) => u.phone === phone) ?? null;
@@ -53,7 +42,7 @@ export async function createUser(name: string, phone: string, password: string):
         id: randomUUID(),
         name,
         phone,
-        passwordHash: hashPassword(password),
+        passwordHash: hashSecret(password),
         createdAt: new Date().toISOString(),
     };
     users.push(user);
@@ -63,8 +52,23 @@ export async function createUser(name: string, phone: string, password: string):
 
 export async function verifyLogin(phone: string, password: string): Promise<PublicUser | null> {
     const user = await findUserByPhone(phone);
-    if (!user || !verifyPassword(password, user.passwordHash)) return null;
+    if (!user || !verifySecret(password, user.passwordHash)) return null;
     return toPublicUser(user);
+}
+
+/**
+ * Lightweight identity for hosts/claimants: a known phone number is treated
+ * as already "logged in" (account created transparently with a fixed
+ * password), a new phone number needs a name to register. Used by pool
+ * creation (host) and claiming (recipient) so neither flow shows a password
+ * field.
+ */
+export async function findOrCreateUserByPhone(phone: string, name?: string): Promise<PublicUser> {
+    const existing = await findUserByPhone(phone);
+    if (existing) return toPublicUser(existing);
+    const trimmedName = name?.trim();
+    if (!trimmedName) throw new Error("NAME_REQUIRED");
+    return createUser(trimmedName, phone, DEFAULT_PASSWORD);
 }
 
 export async function createSession(userId: string): Promise<string> {

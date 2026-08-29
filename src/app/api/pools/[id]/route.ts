@@ -1,30 +1,51 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { effectivePoolStatus } from "@/lib/poolStatus";
+import { getUserBySessionToken } from "@/lib/auth";
 
 function maskPhone(phone: string | null): string | null {
   if (!phone || phone.length < 4) return phone;
   return phone.slice(0, 3) + "****" + phone.slice(-3);
 }
 
-/** Host-only view: requires host_token to prove ownership of the pool. */
+/**
+ * A pool can be managed either by proving possession of the host_token
+ * issued at creation time (the fast, single-device path), or by being
+ * logged in (session_token) as the account whose phone matches the pool's
+ * host_phone — the recovery path for a different device.
+ */
+async function isAuthorizedHost(
+  pool: { host_token: string; host_phone: string },
+  hostToken: string | null,
+  sessionToken: string | null
+): Promise<boolean> {
+  if (hostToken && pool.host_token === hostToken) return true;
+  if (sessionToken && pool.host_phone) {
+    const user = await getUserBySessionToken(sessionToken);
+    if (user && user.phone === pool.host_phone) return true;
+  }
+  return false;
+}
+
+/** Host-only view: requires host_token or a matching-phone session to prove ownership. */
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const hostToken = req.nextUrl.searchParams.get("host_token");
-  if (!hostToken) {
+  const sessionToken = req.nextUrl.searchParams.get("session_token");
+  if (!hostToken && !sessionToken) {
     return NextResponse.json({ error: "MISSING_HOST_TOKEN" }, { status: 401 });
   }
 
   const { data: pool, error: poolError } = await supabaseAdmin
     .from("pools")
-    .select("id, name, host_name, total_amount, envelope_count, mode, min_value, max_value, qr_token, status, expires_at, created_at, host_token")
+    .select("id, name, host_name, total_amount, envelope_count, mode, min_value, max_value, qr_token, status, expires_at, created_at, host_token, host_phone")
     .eq("id", id)
     .single();
 
   if (poolError || !pool) {
     return NextResponse.json({ error: "POOL_NOT_FOUND" }, { status: 404 });
   }
-  if (pool.host_token !== hostToken) {
+  if (!(await isAuthorizedHost(pool, hostToken, sessionToken))) {
     return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
   }
 
@@ -38,7 +59,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "ENVELOPES_FETCH_FAILED" }, { status: 500 });
   }
 
-  const { host_token: _hostToken, ...publicPool } = pool;
+  const { host_token: _hostToken, host_phone: _hostPhone, ...publicPool } = pool;
   const claimed = envelopes.filter((e) => e.is_claimed);
 
   return NextResponse.json({
@@ -58,27 +79,27 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 /** Host-only: close a still-active pool early. Unclaimed envelopes become unreachable. */
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  let body: { host_token?: string };
+  let body: { host_token?: string; session_token?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "INVALID_JSON" }, { status: 400 });
   }
 
-  if (!body.host_token) {
+  if (!body.host_token && !body.session_token) {
     return NextResponse.json({ error: "MISSING_HOST_TOKEN" }, { status: 401 });
   }
 
   const { data: pool, error: poolError } = await supabaseAdmin
     .from("pools")
-    .select("id, host_token, status")
+    .select("id, host_token, host_phone, status")
     .eq("id", id)
     .single();
 
   if (poolError || !pool) {
     return NextResponse.json({ error: "POOL_NOT_FOUND" }, { status: 404 });
   }
-  if (pool.host_token !== body.host_token) {
+  if (!(await isAuthorizedHost(pool, body.host_token ?? null, body.session_token ?? null))) {
     return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
   }
   if (pool.status !== "active") {

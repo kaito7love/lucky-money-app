@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { generateEnvelopeValues, validateFixedValues } from "@/lib/envelopes";
+import { findOrCreateUserByPhone } from "@/lib/auth";
+import { hashSecret } from "@/lib/hash";
+import { isValidPhone, normalizePhone } from "@/lib/phone";
 import type { CreatePoolInput } from "@/lib/types";
 
 const MAX_ENVELOPES = 500;
+const PIN_RE = /^\d{4,6}$/;
 
 export async function POST(req: NextRequest) {
   let body: CreatePoolInput;
@@ -14,12 +18,14 @@ export async function POST(req: NextRequest) {
   }
 
   const name = body.name?.trim();
-  const hostName = body.host_name?.trim();
+  const hostPhone = body.host_phone ? normalizePhone(body.host_phone) : undefined;
   const totalAmount = Number(body.total_amount);
   const envelopeCount = Number(body.envelope_count);
 
   if (!name) return NextResponse.json({ error: "MISSING_NAME" }, { status: 400 });
-  if (!hostName) return NextResponse.json({ error: "MISSING_HOST_NAME" }, { status: 400 });
+  if (!hostPhone || !isValidPhone(hostPhone)) {
+    return NextResponse.json({ error: "INVALID_HOST_PHONE" }, { status: 400 });
+  }
   if (!Number.isInteger(totalAmount) || totalAmount <= 0) {
     return NextResponse.json({ error: "INVALID_TOTAL_AMOUNT" }, { status: 400 });
   }
@@ -28,6 +34,25 @@ export async function POST(req: NextRequest) {
   }
   if (body.mode !== "fixed" && body.mode !== "random") {
     return NextResponse.json({ error: "INVALID_MODE" }, { status: 400 });
+  }
+
+  let hostUser;
+  try {
+    hostUser = await findOrCreateUserByPhone(hostPhone, body.host_name);
+  } catch (err) {
+    if (err instanceof Error && err.message === "NAME_REQUIRED") {
+      return NextResponse.json({ error: "MISSING_HOST_NAME" }, { status: 400 });
+    }
+    throw err;
+  }
+
+  let pinHash: string | null = null;
+  if (body.is_private) {
+    const pin = body.pin?.trim();
+    if (!pin || !PIN_RE.test(pin)) {
+      return NextResponse.json({ error: "INVALID_PIN" }, { status: 400 });
+    }
+    pinHash = hashSecret(pin);
   }
 
   let values: number[];
@@ -64,13 +89,16 @@ export async function POST(req: NextRequest) {
     .from("pools")
     .insert({
       name,
-      host_name: hostName,
+      host_name: hostUser.name,
+      host_phone: hostPhone,
       total_amount: totalAmount,
       envelope_count: envelopeCount,
       mode: body.mode,
       min_value: minValue,
       max_value: maxValue,
       expires_at: expiresAt,
+      is_private: Boolean(body.is_private),
+      pin_hash: pinHash,
     })
     .select("id, qr_token, host_token")
     .single();

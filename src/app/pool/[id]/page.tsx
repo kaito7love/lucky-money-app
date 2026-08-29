@@ -5,6 +5,7 @@ import QRCode from "qrcode";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useLocalStorageValue } from "@/lib/useLocalStorageValue";
 import { useRouteParams } from "@/lib/useRouteParams";
+import { useSession } from "@/lib/SessionContext";
 import { POOL_STATUS_LABEL } from "@/lib/poolStatusLabel";
 import ShareRoom from "@/components/share/ShareRoom";
 
@@ -42,9 +43,11 @@ const ERROR_MESSAGES: Record<string, string> = {
   CLOSE_FAILED: "Không thể đóng phòng, vui lòng thử lại.",
 };
 
-/** Pure fetch + parse, no state — callers apply the result via .then(). */
-async function fetchPoolData(id: string, hostToken: string): Promise<{ ok: boolean; json: PoolData & { error?: string } }> {
-  const res = await fetch(`/api/pools/${id}?host_token=${hostToken}`);
+/** Pure fetch + parse, no state — callers apply the result via .then(). authQuery is
+ * either "host_token=..." (this device created the pool) or "session_token=..."
+ * (recovered by logging in as the account whose phone matches the pool's host). */
+async function fetchPoolData(id: string, authQuery: string): Promise<{ ok: boolean; json: PoolData & { error?: string } }> {
+  const res = await fetch(`/api/pools/${id}?${authQuery}`);
   const json = await res.json();
   return { ok: res.ok, json };
 }
@@ -57,20 +60,24 @@ function buildClaimUrl(qrToken: string): string {
 export default function PoolHostPage() {
   const params = useRouteParams<{ id: string }>();
   const hostToken = useLocalStorageValue(`lucky_host_token_${params.id}`);
+  const { token: sessionToken, loading: sessionLoading } = useSession();
   const [data, setData] = useState<PoolData | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const authReady = hostToken !== undefined && !sessionLoading;
+  const authQuery = hostToken ? `host_token=${hostToken}` : sessionToken ? `session_token=${sessionToken}` : null;
+
   useEffect(() => {
-    if (!hostToken) return;
-    fetchPoolData(params.id, hostToken).then(({ ok, json }) => {
+    if (!authQuery) return;
+    fetchPoolData(params.id, authQuery).then(({ ok, json }) => {
       if (!ok) {
         setError((json.error && ERROR_MESSAGES[json.error]) ?? "Không thể tải dữ liệu, vui lòng thử lại.");
         return;
       }
       setData(json);
     });
-  }, [hostToken, params.id]);
+  }, [authQuery, params.id]);
 
   useEffect(() => {
     if (!data) return;
@@ -78,14 +85,14 @@ export default function PoolHostPage() {
   }, [data]);
 
   useEffect(() => {
-    if (!hostToken) return;
+    if (!authQuery) return;
     const channel = supabaseBrowser
       .channel(`pool-${params.id}`)
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "envelopes", filter: `pool_id=eq.${params.id}` },
         () => {
-          fetchPoolData(params.id, hostToken).then(({ ok, json }) => {
+          fetchPoolData(params.id, authQuery).then(({ ok, json }) => {
             if (!ok) {
               setError((json.error && ERROR_MESSAGES[json.error]) ?? "Không thể tải dữ liệu, vui lòng thử lại.");
               return;
@@ -98,16 +105,16 @@ export default function PoolHostPage() {
     return () => {
       supabaseBrowser.removeChannel(channel);
     };
-  }, [hostToken, params.id]);
+  }, [authQuery, params.id]);
 
-  if (hostToken === undefined) {
+  if (!authReady) {
     return <p className="p-6 text-sm text-gray-600">Đang tải...</p>;
   }
-  if (hostToken === null) {
+  if (!authQuery) {
     return (
       <main className="flex-1 p-6">
         <p className="text-red-600">
-          Không tìm thấy quyền quản lý cho lì xì này trên thiết bị này. Bạn cần mở đúng liên kết được tạo ra khi tạo lì xì.
+          Không tìm thấy quyền quản lý cho lì xì này trên thiết bị này. Bạn cần mở đúng liên kết được tạo ra khi tạo lì xì, hoặc đăng nhập bằng số điện thoại đã dùng để tạo phòng.
         </p>
       </main>
     );
@@ -122,17 +129,17 @@ export default function PoolHostPage() {
   const claimUrl = buildClaimUrl(data.pool.qr_token);
 
   async function handleClosePool() {
-    if (!hostToken) return;
+    if (!authQuery) return;
     if (!window.confirm("Đóng phòng lì xì này ngay? Các bao chưa nhận sẽ không thể nhận được nữa.")) {
       return;
     }
     const res = await fetch(`/api/pools/${params.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ host_token: hostToken }),
+      body: JSON.stringify(hostToken ? { host_token: hostToken } : { session_token: sessionToken }),
     });
     if (res.ok) {
-      fetchPoolData(params.id, hostToken).then(({ ok, json }) => {
+      fetchPoolData(params.id, authQuery).then(({ ok, json }) => {
         if (ok) setData(json);
       });
     } else {

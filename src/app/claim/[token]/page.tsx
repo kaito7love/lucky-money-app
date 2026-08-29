@@ -15,6 +15,7 @@ interface PublicPool {
   remaining: number;
   status: string;
   expires_at: string | null;
+  is_private: boolean;
 }
 
 interface Receipt {
@@ -42,6 +43,7 @@ export default function ClaimPage() {
   const [stage, setStage] = useState<Stage>("loading");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [freshReceipt, setFreshReceipt] = useState<Receipt | null>(null);
@@ -93,7 +95,12 @@ export default function ClaimPage() {
       const res = await fetch("/api/claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ qr_token: params.token, name, phone }),
+        body: JSON.stringify({
+          qr_token: params.token,
+          name,
+          phone,
+          ...(pool?.is_private ? { pin } : {}),
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -104,7 +111,12 @@ export default function ClaimPage() {
         }
         return;
       }
-      const newReceipt: Receipt = { name, phone, value: data.value, claimed_at: new Date().toISOString() };
+      const newReceipt: Receipt = {
+        name: data.name ?? name,
+        phone,
+        value: data.value,
+        claimed_at: new Date().toISOString(),
+      };
       localStorage.setItem(`lucky_claim_${params.token}`, JSON.stringify(newReceipt));
       setFreshReceipt(newReceipt);
       setStage("closed");
@@ -147,8 +159,11 @@ export default function ClaimPage() {
           <ClaimForm
             name={name}
             phone={phone}
+            pin={pin}
+            isPrivate={pool?.is_private ?? false}
             onNameChange={setName}
             onPhoneChange={setPhone}
+            onPinChange={setPin}
             onSubmit={handleSubmit}
             submitting={submitting}
             error={error}

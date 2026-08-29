@@ -7,7 +7,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ qrT
   const { qrToken } = await params;
   const { data: pool, error } = await supabaseAdmin
     .from("pools")
-    .select("id, name, host_name, envelope_count, status, expires_at")
+    .select("id, name, host_name, envelope_count, status, expires_at, is_private")
     .eq("qr_token", qrToken)
     .single();
 
@@ -29,5 +29,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ qrT
     remaining: remaining ?? 0,
     status: await effectivePoolStatus(pool),
     expires_at: pool.expires_at,
+    is_private: pool.is_private,
   });
 }

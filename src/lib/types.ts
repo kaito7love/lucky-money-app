@@ -6,6 +6,7 @@ export interface Pool {
   name: string;
   host_name: string;
   host_token: string;
+  host_phone: string;
   total_amount: number;
   envelope_count: number;
   mode: PoolMode;
@@ -13,12 +14,14 @@ export interface Pool {
   max_value: number | null;
   qr_token: string;
   status: PoolStatus;
+  is_private: boolean;
+  pin_hash: string | null;
   expires_at: string | null;
   created_at: string;
 }
 
-/** Fields safe to show to guests/anyone with the link — no host_token. */
-export type PublicPool = Omit<Pool, "host_token">;
+/** Fields safe to show to guests/anyone with the link — no host_token or pin_hash. */
+export type PublicPool = Omit<Pool, "host_token" | "pin_hash">;
 
 export interface Envelope {
   id: string;
@@ -43,7 +46,8 @@ export interface WalletTransaction {
 
 export interface CreatePoolInput {
   name: string;
-  host_name: string;
+  host_name?: string;
+  host_phone: string;
   total_amount: number;
   envelope_count: number;
   mode: PoolMode;
@@ -51,4 +55,6 @@ export interface CreatePoolInput {
   max_value?: number;
   fixed_values?: number[];
   expires_in_hours?: number;
+  is_private?: boolean;
+  pin?: string;
 }

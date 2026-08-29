@@ -1,3 +1,4 @@
+import type { HTMLAttributes } from "react";
 import styles from "./InputField.module.css";
 
 interface Props {
@@ -9,6 +10,8 @@ interface Props {
     value?: string;
     onChange?: (value: string) => void;
     required?: boolean;
+    inputMode?: HTMLAttributes<HTMLInputElement>["inputMode"];
+    maxLength?: number;
 }
 
 const InputField = ({
@@ -20,6 +23,8 @@ const InputField = ({
     value,
     onChange,
     required,
+    inputMode,
+    maxLength,
 }: Props) => {
     const inputClasses = [
         styles.input,
@@ -46,6 +51,8 @@ const InputField = ({
                     value={value}
                     onChange={onChange ? (e) => onChange(e.target.value) : undefined}
                     required={required}
+                    inputMode={inputMode}
+                    maxLength={maxLength}
                 />
             </div>
         </div>
