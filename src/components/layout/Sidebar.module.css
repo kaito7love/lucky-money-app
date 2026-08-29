@@ -70,7 +70,16 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0 0.5rem;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    text-decoration: none;
+    transition: background 0.15s;
+}
+.accountInfo:hover {
+    background: #fef2f2;
+}
+.accountInfoActive {
+    background: #fef2f2;
 }
 .avatarInitial {
     width: 36px;
@@ -83,6 +92,9 @@
     justify-content: center;
     font-weight: 700;
     flex-shrink: 0;
+}
+.accountInfoActive .avatarInitial {
+    box-shadow: 0 0 0 2px #ea2a33, 0 0 0 4px #fef2f2;
 }
 .accountText {
     min-width: 0;

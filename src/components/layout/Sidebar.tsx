@@ -11,7 +11,6 @@ const NAV_ITEMS = [
     { href: "/join", icon: "qr_code_scanner", label: "Tham gia" },
     { href: "/chat", icon: "forum", label: "Trò chuyện" },
     { href: "/wallet", icon: "account_balance_wallet", label: "Ví" },
-    { href: "/profile", icon: "person", label: "Hồ sơ" },
 ];
 
 const Sidebar = () => {
@@ -46,7 +45,10 @@ const Sidebar = () => {
             </nav>
 
             <div className={styles.account}>
-                <div className={styles.accountInfo}>
+                <Link
+                    href="/profile"
+                    className={`${styles.accountInfo} ${pathname.startsWith("/profile") ? styles.accountInfoActive : ""}`}
+                >
                     <div className={styles.avatarInitial}>
                         {user.name.trim().charAt(0).toUpperCase() || "?"}
                     </div>
@@ -54,7 +56,7 @@ const Sidebar = () => {
                         <p className={styles.accountName}>{user.name}</p>
                         <p className={styles.accountPhone}>{user.phone}</p>
                     </div>
-                </div>
+                </Link>
                 <button
                     className={styles.logoutBtn}
                     onClick={() => {
