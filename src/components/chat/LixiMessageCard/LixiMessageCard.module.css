@@ -1,0 +1,83 @@
+.card {
+    position: relative;
+    align-self: center;
+    width: 100%;
+    max-width: 320px;
+    background: linear-gradient(160deg, #f42525, #c81e1e);
+    border-radius: 1.25rem;
+    padding: 1.1rem 1.25rem;
+    color: white;
+    box-shadow: 0 10px 20px -6px rgba(244, 37, 37, 0.4);
+    overflow: hidden;
+}
+.decorIcon {
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+    font-size: 3rem;
+    opacity: 0.15;
+}
+.topSection {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+}
+.giftIconBox {
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.infoText {
+    min-width: 0;
+}
+.title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+}
+.subTitle {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 2px 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 0.85rem 0;
+}
+.bottomSection {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    position: relative;
+}
+.statusText {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+.openBtn {
+    flex-shrink: 0;
+    background: #ffd700;
+    color: #7a1a1a;
+    border: none;
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    font-weight: 700;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+.openBtn:disabled {
+    background: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.7);
+    cursor: not-allowed;
+}

@@ -9,6 +9,7 @@ import LiXiEventCard from "./LiXiEventCard/LiXiEventCard";
 import ChatInput from "./ChatInput/ChatInput";
 import ActiveLixiCard from "./LiXiEventCard/ActiveLixiCard";
 import LiXiCard from "./LiXiEventCard/LiXiCard";
+import LixiMessageCard from "@/components/chat/LixiMessageCard/LixiMessageCard";
 import { useSession } from "@/lib/SessionContext";
 import { getChatRoom } from "@/lib/chatRooms";
 
@@ -18,6 +19,13 @@ interface ChatMessage {
     senderName: string;
     text: string;
     createdAt: string;
+    lixi?: {
+        poolId: string;
+        qrToken: string;
+        name: string;
+        totalAmount: number;
+        envelopeCount: number;
+    };
 }
 
 interface ChatRoomProps {
@@ -107,14 +115,25 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
                     ) : messages.length === 0 ? (
                         <p className={styles.centerMessage}>Chưa có tin nhắn nào, hãy là người đầu tiên!</p>
                     ) : (
-                        messages.map((m) => (
-                            <MessageItem
-                                key={m.id}
-                                sender={m.senderName}
-                                text={m.text}
-                                isMine={user?.id === m.senderId}
-                            />
-                        ))
+                        messages.map((m) =>
+                            m.lixi ? (
+                                <LixiMessageCard
+                                    key={m.id}
+                                    senderName={m.senderName}
+                                    name={m.lixi.name}
+                                    totalAmount={m.lixi.totalAmount}
+                                    envelopeCount={m.lixi.envelopeCount}
+                                    qrToken={m.lixi.qrToken}
+                                />
+                            ) : (
+                                <MessageItem
+                                    key={m.id}
+                                    sender={m.senderName}
+                                    text={m.text}
+                                    isMine={user?.id === m.senderId}
+                                />
+                            )
+                        )
                     )}
                     <div ref={bottomRef} />
                 </div>

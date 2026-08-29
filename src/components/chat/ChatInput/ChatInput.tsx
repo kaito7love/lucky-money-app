@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./ChatInput.module.css";
 import { useSession } from "@/lib/SessionContext";
+import LixiComposer from "@/components/chat/LixiComposer/LixiComposer";
 
 interface ChatMessage {
     id: string;
@@ -11,6 +12,13 @@ interface ChatMessage {
     senderName: string;
     text: string;
     createdAt: string;
+    lixi?: {
+        poolId: string;
+        qrToken: string;
+        name: string;
+        totalAmount: number;
+        envelopeCount: number;
+    };
 }
 
 interface ChatInputProps {
@@ -23,6 +31,7 @@ const ChatInput = ({ roomId, onSent }: ChatInputProps) => {
     const router = useRouter();
     const [text, setText] = useState("");
     const [sending, setSending] = useState(false);
+    const [composerOpen, setComposerOpen] = useState(false);
 
     if (!user) {
         return (
@@ -86,7 +95,7 @@ const ChatInput = ({ roomId, onSent }: ChatInputProps) => {
                 </button>
             </div>
             <div className={styles.shortcuts}>
-                <button className={styles.chipLixi}>
+                <button className={styles.chipLixi} onClick={() => setComposerOpen(true)}>
                     <span className="material-symbols-outlined">attach_money</span>{" "}
                     Lì Xì
                 </button>
@@ -95,6 +104,17 @@ const ChatInput = ({ roomId, onSent }: ChatInputProps) => {
                     Quà tặng
                 </button>
             </div>
+
+            {composerOpen && (
+                <LixiComposer
+                    roomId={roomId}
+                    onClose={() => setComposerOpen(false)}
+                    onCreated={(message) => {
+                        onSent(message);
+                        setComposerOpen(false);
+                    }}
+                />
+            )}
         </footer>
     );
 };

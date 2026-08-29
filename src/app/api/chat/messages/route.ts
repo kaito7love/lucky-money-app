@@ -11,6 +11,13 @@ interface ChatMessage {
     senderName: string;
     text: string;
     createdAt: string;
+    lixi?: {
+        poolId: string;
+        qrToken: string;
+        name: string;
+        totalAmount: number;
+        envelopeCount: number;
+    };
 }
 
 const MESSAGES_FILE = "chat-messages.json";
