@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./ChatRoom.module.css";
 import ChatHeader from "./ChatHeader/ChatHeader";
@@ -9,6 +9,7 @@ import ChatInput from "./ChatInput/ChatInput";
 import LixiMessageCard from "@/components/chat/LixiMessageCard/LixiMessageCard";
 import { useSession } from "@/lib/SessionContext";
 import { getChatRoom } from "@/lib/chatRooms";
+import { chatDayKey, formatChatDate } from "@/lib/formatChatDate";
 
 interface ChatMessage {
     id: string;
@@ -37,6 +38,20 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
     const bottomRef = useRef<HTMLDivElement>(null);
 
     const room = getChatRoom(roomId);
+
+    // Messages are bucketed per day so each date separator can stick within
+    // its own group: as siblings they would all pin to top: 0 and stack on
+    // top of each other.
+    const dayGroups = useMemo(() => {
+        const groups: { key: string; firstAt: string; items: ChatMessage[] }[] = [];
+        for (const message of messages) {
+            const key = chatDayKey(message.createdAt);
+            const current = groups[groups.length - 1];
+            if (current && current.key === key) current.items.push(message);
+            else groups.push({ key, firstAt: message.createdAt, items: [message] });
+        }
+        return groups;
+    }, [messages]);
 
     useEffect(() => {
         if (!room) return;
@@ -83,34 +98,37 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
                 <div className={styles.patternLayer} />
 
                 <div className={styles.chatContent}>
-                    <div className={styles.dateTag}>
-                        <span>Jan 29, 2026 (Mùng 1)</span>
-                    </div>
-
                     {loading ? (
                         <p className={styles.centerMessage}>Đang tải tin nhắn...</p>
                     ) : messages.length === 0 ? (
                         <p className={styles.centerMessage}>Chưa có tin nhắn nào, hãy là người đầu tiên!</p>
                     ) : (
-                        messages.map((m) =>
-                            m.lixi ? (
-                                <LixiMessageCard
-                                    key={m.id}
-                                    senderName={m.senderName}
-                                    name={m.lixi.name}
-                                    totalAmount={m.lixi.totalAmount}
-                                    envelopeCount={m.lixi.envelopeCount}
-                                    qrToken={m.lixi.qrToken}
-                                />
-                            ) : (
-                                <MessageItem
-                                    key={m.id}
-                                    sender={m.senderName}
-                                    text={m.text}
-                                    isMine={user?.id === m.senderId}
-                                />
-                            )
-                        )
+                        dayGroups.map((group) => (
+                            <div key={group.key} className={styles.dayGroup}>
+                                <div className={styles.dateTag}>
+                                    <span>{formatChatDate(group.firstAt)}</span>
+                                </div>
+                                {group.items.map((m) =>
+                                    m.lixi ? (
+                                        <LixiMessageCard
+                                            key={m.id}
+                                            senderName={m.senderName}
+                                            name={m.lixi.name}
+                                            totalAmount={m.lixi.totalAmount}
+                                            envelopeCount={m.lixi.envelopeCount}
+                                            qrToken={m.lixi.qrToken}
+                                        />
+                                    ) : (
+                                        <MessageItem
+                                            key={m.id}
+                                            sender={m.senderName}
+                                            text={m.text}
+                                            isMine={user?.id === m.senderId}
+                                        />
+                                    )
+                                )}
+                            </div>
+                        ))
                     )}
                     <div ref={bottomRef} />
                 </div>

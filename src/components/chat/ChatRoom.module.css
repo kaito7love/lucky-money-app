@@ -30,6 +30,13 @@
     flex-direction: column;
     gap: 1rem;
 }
+/* Mirrors .chatContent's own column layout so MessageItem's align-self
+   still places own/other messages correctly inside a group. */
+.dayGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
 .dateTag {
     display: flex;
     justify-content: center;
