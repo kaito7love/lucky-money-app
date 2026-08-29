@@ -6,12 +6,14 @@ import styles from "./LixiHome.module.css";
 import Header from "./Header/HomeHeader";
 import RoomCard from "./RoomCard/RoomCard";
 import { useMyRooms } from "@/lib/useMyRooms";
+import { useSession } from "@/lib/SessionContext";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
 import { POOL_STATUS_LABEL } from "@/lib/poolStatusLabel";
 
 const LixiHome = () => {
     const router = useRouter();
     const { rooms, loading } = useMyRooms();
+    const { user } = useSession();
 
     return (
         <div className={styles.page}>
@@ -74,7 +76,9 @@ const LixiHome = () => {
                             <p className={styles.roomListMessage}>Đang tải...</p>
                         ) : rooms.length === 0 ? (
                             <p className={styles.roomListMessage}>
-                                Bạn chưa tạo phòng lì xì nào trên thiết bị này.
+                                {user
+                                    ? "Bạn chưa tạo phòng lì xì nào."
+                                    : "Bạn chưa tạo phòng lì xì nào trên thiết bị này. Đăng nhập để xem phòng đã tạo trên thiết bị khác."}
                             </p>
                         ) : (
                             rooms.map((room) => (

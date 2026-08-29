@@ -37,7 +37,7 @@ interface PoolData {
 const ERROR_MESSAGES: Record<string, string> = {
   MISSING_HOST_TOKEN: "Thiếu quyền quản lý cho lì xì này.",
   POOL_NOT_FOUND: "Không tìm thấy lì xì này.",
-  FORBIDDEN: "Bạn không có quyền quản lý lì xì này trên thiết bị này.",
+  FORBIDDEN: "Bạn không có quyền quản lý lì xì này.",
   ENVELOPES_FETCH_FAILED: "Không thể tải danh sách bao lì xì.",
   POOL_NOT_ACTIVE: "Phòng lì xì này không còn đang mở.",
   CLOSE_FAILED: "Không thể đóng phòng, vui lòng thử lại.",
