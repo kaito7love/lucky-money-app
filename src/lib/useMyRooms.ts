@@ -34,52 +34,72 @@ async function fetchRoom(url: string): Promise<MyRoom | null> {
     }
 }
 
+/** Pools whose host_phone is the logged-in account's, wherever they were made. */
+async function fetchAccountRooms(sessionToken: string): Promise<(MyRoom | null)[]> {
+    try {
+        const res = await fetch(`/api/pools/mine?session_token=${sessionToken}`);
+        if (!res.ok) return [];
+        const { pools } = await res.json();
+        return await Promise.all(
+            (pools as { id: string }[]).map((p) =>
+                fetchRoom(`/api/pools/${p.id}?session_token=${sessionToken}`)
+            )
+        );
+    } catch {
+        return [];
+    }
+}
+
+/** Pools this browser created, proven by the host_token it stored at the time. */
+async function fetchLocalRooms(): Promise<(MyRoom | null)[]> {
+    const entries: { id: string; token: string }[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key?.startsWith(HOST_TOKEN_PREFIX)) continue;
+        const token = localStorage.getItem(key);
+        if (token) entries.push({ id: key.slice(HOST_TOKEN_PREFIX.length), token });
+    }
+    return Promise.all(entries.map((e) => fetchRoom(`/api/pools/${e.id}?host_token=${e.token}`)));
+}
+
 /**
- * A host's proof of ownership is either the host_token this browser stored
- * in localStorage when it created the pool (fast, single-device path), or
- * being logged in as the account whose phone matches the pool's host_phone
- * (recovery path — surfaces rooms created on a different device).
+ * "Your rooms" means one thing at a time, on purpose.
+ *
+ * Signed in, it is the pools hosted by this account's phone number. A
+ * host_token this browser happens to hold for someone else's number does not
+ * make that pool the account's, and listing it under the account's own rooms
+ * only reads as a mistake — the card says "Host: <someone else>" right under
+ * the heading. Those pools stay fully manageable through their direct link;
+ * the token is not lost, just not advertised here.
+ *
+ * Signed out there is no account to scope by, so the stored host_tokens are
+ * the only ownership proof available and all of them count.
  */
 export function useMyRooms() {
-    const { token: sessionToken } = useSession();
+    const { user, token: sessionToken, loading: sessionLoading } = useSession();
     const [rooms, setRooms] = useState<MyRoom[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Which list is the right one depends on whether a session exists, so
+        // wait for that to settle. Choosing early would flash this browser's
+        // host_token rooms at someone who is in fact signed in.
+        if (sessionLoading) return;
+
         let cancelled = false;
 
         async function load() {
-            const localEntries: { id: string; token: string }[] = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (!key?.startsWith(HOST_TOKEN_PREFIX)) continue;
-                const token = localStorage.getItem(key);
-                if (token) localEntries.push({ id: key.slice(HOST_TOKEN_PREFIX.length), token });
-            }
-
-            const localResults = await Promise.all(
-                localEntries.map((e) => fetchRoom(`/api/pools/${e.id}?host_token=${e.token}`))
-            );
-
-            let recoveredResults: (MyRoom | null)[] = [];
-            if (sessionToken) {
-                try {
-                    const res = await fetch(`/api/pools/mine?session_token=${sessionToken}`);
-                    if (res.ok) {
-                        const { pools } = await res.json();
-                        const localIds = new Set(localEntries.map((e) => e.id));
-                        const missing = (pools as { id: string }[]).filter((p) => !localIds.has(p.id));
-                        recoveredResults = await Promise.all(
-                            missing.map((p) => fetchRoom(`/api/pools/${p.id}?session_token=${sessionToken}`))
-                        );
-                    }
-                } catch {
-                    // Recovery path is best-effort; local rooms still show if this fails.
-                }
-            }
+            // Keyed off the resolved user, not the raw token: a stale token that
+            // no longer identifies anyone means signed out, and falling back to
+            // the stored host_tokens beats showing an empty page to someone who
+            // still owns rooms.
+            const results =
+                user && sessionToken
+                    ? await fetchAccountRooms(sessionToken)
+                    : await fetchLocalRooms();
 
             if (cancelled) return;
-            const valid = [...localResults, ...recoveredResults].filter((r): r is MyRoom => r !== null);
+            const valid = results.filter((r): r is MyRoom => r !== null);
             valid.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
             setRooms(valid);
             setLoading(false);
@@ -89,7 +109,7 @@ export function useMyRooms() {
         return () => {
             cancelled = true;
         };
-    }, [sessionToken]);
+    }, [sessionToken, user?.id, sessionLoading]);
 
     return { rooms, loading };
 }
