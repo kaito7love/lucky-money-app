@@ -5,10 +5,7 @@ import { useRouter } from "next/navigation";
 import styles from "./ChatRoom.module.css";
 import ChatHeader from "./ChatHeader/ChatHeader";
 import MessageItem from "./MessageItem/MessageItem";
-import LiXiEventCard from "./LiXiEventCard/LiXiEventCard";
 import ChatInput from "./ChatInput/ChatInput";
-import ActiveLixiCard from "./LiXiEventCard/ActiveLixiCard";
-import LiXiCard from "./LiXiEventCard/LiXiCard";
 import LixiMessageCard from "@/components/chat/LixiMessageCard/LixiMessageCard";
 import { useSession } from "@/lib/SessionContext";
 import { getChatRoom } from "@/lib/chatRooms";
@@ -89,26 +86,6 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
                     <div className={styles.dateTag}>
                         <span>Jan 29, 2026 (Mùng 1)</span>
                     </div>
-
-                    <LiXiEventCard />
-                    <LiXiCard
-                        senderName="Minh Pham"
-                        packetName="Big Dragon Packet"
-                        claimedCount={50}
-                        totalCount={100}
-                        message="Wishing you wealth and health!"
-                        initialSeconds={299} // Tương đương 04:59
-                        onOpen={() => alert("Chúc mừng năm mới!")}
-                    />
-
-                    <ActiveLixiCard
-                        senderName="Minh Pham"
-                        claimedCount={50}
-                        totalCount={100}
-                        message="Wishing you wealth and health!"
-                        initialSeconds={299} // 4:59
-                        onOpen={() => console.log("Lì xì opened!")}
-                    />
 
                     {loading ? (
                         <p className={styles.centerMessage}>Đang tải tin nhắn...</p>
