@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./ChatRoomList.module.css";
 import { useBackOrHome } from "@/lib/useBackOrHome";
+import { useSession } from "@/lib/SessionContext";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
 
 interface ChatRoomSummary {
@@ -16,15 +17,40 @@ interface ChatRoomSummary {
 const ChatRoomList = () => {
     const router = useRouter();
     const goBack = useBackOrHome();
+    const { user, loading: sessionLoading } = useSession();
     const [rooms, setRooms] = useState<ChatRoomSummary[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!user) return;
         fetch("/api/chat/rooms")
             .then((res) => res.json())
             .then((data) => setRooms(data.rooms ?? []))
             .finally(() => setLoading(false));
-    }, []);
+    }, [user]);
+
+    if (sessionLoading) {
+        return <p className={styles.centerMessage}>Đang tải...</p>;
+    }
+
+    if (!user) {
+        return (
+            <div className={styles.signedOut}>
+                <button
+                    className={styles.signedOutBackBtn}
+                    onClick={() => window.history.back()}
+                    aria-label="Quay lại"
+                >
+                    <span className="material-symbols-outlined">arrow_back</span>
+                </button>
+                <span className="material-symbols-outlined">forum</span>
+                <p>Đăng nhập để xem danh sách trò chuyện.</p>
+                <button className={styles.loginBtn} onClick={() => router.push("/auth")}>
+                    Đăng nhập / Đăng ký
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.page}>
