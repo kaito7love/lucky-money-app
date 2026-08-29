@@ -1,83 +1,82 @@
 .nav {
-    position: fixed;
-    left: 50%;
-    bottom: 1.25rem;
-    transform: translateX(-50%);
-    z-index: 50;
-    background: rgba(28, 28, 30, 0.92);
-    backdrop-filter: blur(12px);
-    border-radius: 999px;
-    box-shadow: 0 10px 30px -6px rgba(0, 0, 0, 0.45);
+  position: fixed;
+  left: 50%;
+  bottom: 1.25rem;
+  transform: translateX(-50%);
+  z-index: 50;
+  background: rgba(28, 28, 30, 0.92);
+  backdrop-filter: blur(12px);
+  border-radius: 999px;
+  box-shadow: 0 10px 30px -6px rgba(0, 0, 0, 0.45);
 }
 .navInner {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem;
 }
 .navItem,
 .navItemActive {
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: 999px;
-    border: none;
-    background: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255, 255, 255, 0.65);
-    cursor: pointer;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
 }
 .navItemActive {
-    background: #fff;
-    color: #1c1c1e;
+  background: #fff;
+  color: #1c1c1e;
 }
 .avatarBtn {
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: 50%;
-    border: none;
-    background: none;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 .avatarInitial {
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 50%;
-    background: #ea2a33;
-    color: white;
-    font-weight: 700;
-    font-size: 0.9375rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: #ea2a33;
+  color: white;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .avatarGuest {
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.65);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
 }
 .avatarGuest span {
-    line-height: 1;
-    transform: translateY(2px);
+  line-height: 1;
 }
 .avatarBtnActive .avatarInitial,
 .avatarBtnActive .avatarGuest {
-    box-shadow: 0 0 0 2px #ea2a33;
+  box-shadow: 0 0 0 2px #ea2a33;
 }
 
 @media (min-width: 1024px) {
-    .navAutoHide {
-        display: none;
-    }
+  .navAutoHide {
+    display: none;
+  }
 }
