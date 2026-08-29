@@ -42,8 +42,8 @@ const MobileNav = () => {
                             {user.name.trim().charAt(0).toUpperCase() || "?"}
                         </span>
                     ) : (
-                        <span className={`material-symbols-outlined ${styles.avatarGuest}`}>
-                            person
+                        <span className={styles.avatarGuest}>
+                            <span className="material-symbols-outlined">person</span>
                         </span>
                     )}
                 </button>
