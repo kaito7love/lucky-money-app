@@ -6,6 +6,7 @@ import styles from "./CreateRoom.module.css";
 import CreateHeader from "./Header/CreateHeader";
 import CreateHero from "./Hero/CreateHero";
 import PrivacySettings from "./Privacy/PrivacySettings";
+import { useSession } from "@/lib/SessionContext";
 
 type Mode = "random" | "fixed";
 
@@ -29,6 +30,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 const CreateRoom = () => {
     const router = useRouter();
+    const { user } = useSession();
     const [name, setName] = useState("");
     const [greeting, setGreeting] = useState("");
     const [hostName, setHostName] = useState("");
@@ -44,6 +46,13 @@ const CreateRoom = () => {
     const [pin, setPin] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
+    const [prefilledForUserId, setPrefilledForUserId] = useState<string | null>(null);
+
+    if (user && user.id !== prefilledForUserId) {
+        setPrefilledForUserId(user.id);
+        setHostPhone(user.phone);
+        setHostName(user.name);
+    }
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
