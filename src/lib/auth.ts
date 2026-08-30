@@ -1,5 +1,4 @@
-import { randomUUID } from "crypto";
-import { readJson, writeJson } from "@/lib/jsonDb";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { hashSecret, verifySecret } from "@/lib/hash";
 
 const DEFAULT_PASSWORD = "123456";
@@ -18,36 +17,30 @@ export interface PublicUser {
     phone: string;
 }
 
-interface Session {
-    token: string;
-    userId: string;
-    createdAt: string;
-}
-
-const USERS_FILE = "users.json";
-const SESSIONS_FILE = "sessions.json";
+const USER_COLUMNS = "id, name, phone, passwordHash:password_hash, createdAt:created_at";
 
 function toPublicUser(user: User): PublicUser {
     return { id: user.id, name: user.name, phone: user.phone };
 }
 
 export async function findUserByPhone(phone: string): Promise<User | null> {
-    const users = await readJson<User[]>(USERS_FILE, []);
-    return users.find((u) => u.phone === phone) ?? null;
+    const { data, error } = await supabaseAdmin
+        .from("users")
+        .select(USER_COLUMNS)
+        .eq("phone", phone)
+        .maybeSingle();
+    if (error) throw new Error("USER_LOOKUP_FAILED");
+    return data;
 }
 
 export async function createUser(name: string, phone: string, password: string): Promise<PublicUser> {
-    const users = await readJson<User[]>(USERS_FILE, []);
-    const user: User = {
-        id: randomUUID(),
-        name,
-        phone,
-        passwordHash: hashSecret(password),
-        createdAt: new Date().toISOString(),
-    };
-    users.push(user);
-    await writeJson(USERS_FILE, users);
-    return toPublicUser(user);
+    const { data, error } = await supabaseAdmin
+        .from("users")
+        .insert({ name, phone, password_hash: hashSecret(password) })
+        .select("id, name, phone")
+        .single();
+    if (error || !data) throw new Error("USER_CREATE_FAILED");
+    return data;
 }
 
 export async function verifyLogin(phone: string, password: string): Promise<PublicUser | null> {
@@ -72,23 +65,31 @@ export async function findOrCreateUserByPhone(phone: string, name?: string): Pro
 }
 
 export async function createSession(userId: string): Promise<string> {
-    const sessions = await readJson<Session[]>(SESSIONS_FILE, []);
-    const token = randomUUID();
-    sessions.push({ token, userId, createdAt: new Date().toISOString() });
-    await writeJson(SESSIONS_FILE, sessions);
-    return token;
+    const { data, error } = await supabaseAdmin
+        .from("sessions")
+        .insert({ user_id: userId })
+        .select("token")
+        .single();
+    if (error || !data) throw new Error("SESSION_CREATE_FAILED");
+    return data.token;
 }
 
 export async function getUserBySessionToken(token: string): Promise<PublicUser | null> {
-    const sessions = await readJson<Session[]>(SESSIONS_FILE, []);
-    const session = sessions.find((s) => s.token === token);
+    const { data: session } = await supabaseAdmin
+        .from("sessions")
+        .select("user_id")
+        .eq("token", token)
+        .maybeSingle();
     if (!session) return null;
-    const users = await readJson<User[]>(USERS_FILE, []);
-    const user = users.find((u) => u.id === session.userId);
-    return user ? toPublicUser(user) : null;
+
+    const { data: user } = await supabaseAdmin
+        .from("users")
+        .select("id, name, phone")
+        .eq("id", session.user_id)
+        .maybeSingle();
+    return user ?? null;
 }
 
 export async function deleteSession(token: string): Promise<void> {
-    const sessions = await readJson<Session[]>(SESSIONS_FILE, []);
-    await writeJson(SESSIONS_FILE, sessions.filter((s) => s.token !== token));
+    await supabaseAdmin.from("sessions").delete().eq("token", token);
 }

@@ -31,9 +31,10 @@ nhận một bao ngẫu nhiên. Host xem danh sách nhận trực tiếp (realti
 1. Tạo project trên [Supabase](https://supabase.com), lấy `Project URL`,
    `anon key`, `service_role key`.
 2. Copy `.env.example` thành `.env.local` và điền các giá trị trên.
-3. Chạy migration `supabase/migrations/0001_init.sql` trong SQL Editor của
-   Supabase (tạo bảng `pools`, `envelopes`, `wallet_transactions`, hàm
-   `claim_envelope()`, và bật realtime cho bảng `envelopes`).
+3. Chạy lần lượt các migration trong `supabase/migrations/` (theo đúng thứ
+   tự `0001` → `0005`) trong SQL Editor của Supabase — tạo bảng `pools`,
+   `envelopes`, `wallet_transactions`, `users`, `sessions`, `chat_messages`,
+   hàm `claim_envelope()`, và bật realtime cho bảng `envelopes`.
 4. Cài dependencies và chạy dev server:
 
    ```bash
@@ -42,6 +43,27 @@ nhận một bao ngẫu nhiên. Host xem danh sách nhận trực tiếp (realti
    ```
 
 5. Mở `http://localhost:3000`.
+
+Toàn bộ state của app (tài khoản, session, tin nhắn chat, pool, ví) nằm
+trong Postgres — không còn file JSON cục bộ nào — nên app deploy được lên
+hosting serverless (không có ổ đĩa bền vững) mà không mất dữ liệu.
+
+## Deploy (free)
+
+1. Push code lên GitHub (repo này đã có sẵn).
+2. Tạo project Supabase Cloud (free tier) riêng cho production, chạy đủ 5
+   migration như bước "Cài đặt" ở trên.
+3. Import repo vào [Vercel](https://vercel.com) (đăng nhập bằng GitHub cho
+   nhanh), điền 3 biến môi trường trong Project Settings → Environment
+   Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+   `SUPABASE_SERVICE_ROLE_KEY` (lấy từ project Supabase Cloud ở bước 2).
+4. Deploy. Các lần push sau lên `main` sẽ tự deploy lại.
+
+**Lưu ý gói free:** Vercel không "ngủ" — chỉ có cold start vài trăm ms sau
+một thời gian không ai truy cập. Supabase free tier thì khác: project sẽ tự
+**pause sau ~7 ngày không có request nào** và cần vào dashboard bấm
+"Restore" thủ công mới dùng lại được — đáng chú ý vì app này dùng theo mùa
+(rộ dịp Tết, vắng quanh năm).
 
 ## Luồng sử dụng
 

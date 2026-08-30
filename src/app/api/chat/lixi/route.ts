@@ -1,27 +1,8 @@
-import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getUserBySessionToken } from "@/lib/auth";
-import { readJson, writeJson } from "@/lib/jsonDb";
+import { insertMessage } from "@/lib/chatMessages";
 import { getChatRoom } from "@/lib/chatRooms";
 import { createPool, poolErrorStatus } from "@/lib/pools";
-
-interface ChatMessage {
-    id: string;
-    roomId: string;
-    senderId: string;
-    senderName: string;
-    text: string;
-    createdAt: string;
-    lixi?: {
-        poolId: string;
-        qrToken: string;
-        name: string;
-        totalAmount: number;
-        envelopeCount: number;
-    };
-}
-
-const MESSAGES_FILE = "chat-messages.json";
 
 /** Lì xì sent into a chat expires a day after it's posted, the way a real
  * red envelope handed out at a gathering stops being live once the gathering
@@ -95,14 +76,11 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: code }, { status: poolErrorStatus(code) });
     }
 
-    const messages = await readJson<ChatMessage[]>(MESSAGES_FILE, []);
-    const message: ChatMessage = {
-        id: randomUUID(),
+    const message = await insertMessage({
         roomId,
         senderId: user.id,
         senderName: user.name,
         text: `🧧 Đã gửi lì xì: ${body.name}`,
-        createdAt: new Date().toISOString(),
         lixi: {
             poolId: pool.id,
             qrToken: pool.qr_token,
@@ -110,9 +88,7 @@ export async function POST(req: NextRequest) {
             totalAmount,
             envelopeCount,
         },
-    };
-    messages.push(message);
-    await writeJson(MESSAGES_FILE, messages);
+    });
 
     return NextResponse.json({ message, host_token: pool.host_token, pool_id: pool.id });
 }

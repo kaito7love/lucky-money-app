@@ -1,26 +1,7 @@
-import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getUserBySessionToken } from "@/lib/auth";
-import { readJson, writeJson } from "@/lib/jsonDb";
+import { getMessagesByRoom, insertMessage } from "@/lib/chatMessages";
 import { getChatRoom } from "@/lib/chatRooms";
-
-interface ChatMessage {
-    id: string;
-    roomId: string;
-    senderId: string;
-    senderName: string;
-    text: string;
-    createdAt: string;
-    lixi?: {
-        poolId: string;
-        qrToken: string;
-        name: string;
-        totalAmount: number;
-        envelopeCount: number;
-    };
-}
-
-const MESSAGES_FILE = "chat-messages.json";
 
 export async function GET(req: NextRequest) {
     const roomId = req.nextUrl.searchParams.get("room_id");
@@ -31,8 +12,8 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "ROOM_NOT_FOUND" }, { status: 404 });
     }
 
-    const messages = await readJson<ChatMessage[]>(MESSAGES_FILE, []);
-    return NextResponse.json({ messages: messages.filter((m) => m.roomId === roomId) });
+    const messages = await getMessagesByRoom(roomId);
+    return NextResponse.json({ messages });
 }
 
 export async function POST(req: NextRequest) {
@@ -64,17 +45,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "EMPTY_TEXT" }, { status: 400 });
     }
 
-    const messages = await readJson<ChatMessage[]>(MESSAGES_FILE, []);
-    const message: ChatMessage = {
-        id: randomUUID(),
-        roomId,
-        senderId: user.id,
-        senderName: user.name,
-        text,
-        createdAt: new Date().toISOString(),
-    };
-    messages.push(message);
-    await writeJson(MESSAGES_FILE, messages);
-
+    const message = await insertMessage({ roomId, senderId: user.id, senderName: user.name, text });
     return NextResponse.json({ message });
 }
