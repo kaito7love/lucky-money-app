@@ -6,6 +6,7 @@ import styles from "./CreateRoom.module.css";
 import CreateHeader from "./Header/CreateHeader";
 import CreateHero from "./Hero/CreateHero";
 import PrivacySettings from "./Privacy/PrivacySettings";
+import AmountInput from "./AmountInput/AmountInput";
 import { useSession } from "@/lib/SessionContext";
 
 type Mode = "random" | "fixed";
@@ -158,29 +159,24 @@ const CreateRoom = () => {
                     </div>
 
                     <div className={styles.row}>
-                        <div className={styles.inputGroup}>
-                            <label>Tổng số tiền</label>
-                            <input
-                                type="number"
-                                min={1}
-                                placeholder="1000000"
-                                value={totalAmount}
-                                onChange={(e) => setTotalAmount(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className={styles.inputGroup}>
-                            <label>Số bao lì xì</label>
-                            <input
-                                type="number"
-                                min={1}
-                                max={500}
-                                placeholder="10"
-                                value={envelopeCount}
-                                onChange={(e) => setEnvelopeCount(e.target.value)}
-                                required
-                            />
-                        </div>
+                        <AmountInput
+                            label="Tổng số tiền"
+                            icon="payments"
+                            suffix="đ"
+                            placeholder="1.000.000"
+                            value={totalAmount}
+                            onChange={setTotalAmount}
+                            required
+                        />
+                        <AmountInput
+                            label="Số bao lì xì"
+                            icon="inventory_2"
+                            suffix="bao"
+                            placeholder="10"
+                            value={envelopeCount}
+                            onChange={setEnvelopeCount}
+                            required
+                        />
                     </div>
 
                     <div className={styles.inputGroup}>
@@ -209,26 +205,22 @@ const CreateRoom = () => {
 
                     {mode === "random" ? (
                         <div className={styles.row}>
-                            <div className={styles.inputGroup}>
-                                <label>Giá trị tối thiểu / bao</label>
-                                <input
-                                    type="number"
-                                    min={1}
-                                    value={minValue}
-                                    onChange={(e) => setMinValue(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div className={styles.inputGroup}>
-                                <label>Giá trị tối đa / bao</label>
-                                <input
-                                    type="number"
-                                    min={1}
-                                    value={maxValue}
-                                    onChange={(e) => setMaxValue(e.target.value)}
-                                    required
-                                />
-                            </div>
+                            <AmountInput
+                                label="Giá trị tối thiểu / bao"
+                                icon="trending_down"
+                                suffix="đ"
+                                value={minValue}
+                                onChange={setMinValue}
+                                required
+                            />
+                            <AmountInput
+                                label="Giá trị tối đa / bao"
+                                icon="trending_up"
+                                suffix="đ"
+                                value={maxValue}
+                                onChange={setMaxValue}
+                                required
+                            />
                         </div>
                     ) : (
                         <div className={styles.inputGroup}>
