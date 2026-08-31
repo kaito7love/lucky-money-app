@@ -64,7 +64,15 @@ export default function ClaimPage() {
             setStage("opened");
             return;
           }
-          setError(json.error === "POOL_NOT_FOUND" ? "Không tìm thấy lì xì này." : "Có lỗi xảy ra.");
+          // Worth telling apart: a missing pool is final, a failed lookup is
+          // worth retrying.
+          setError(
+            json.error === "POOL_NOT_FOUND"
+              ? "Không tìm thấy lì xì này."
+              : json.error === "POOL_LOOKUP_FAILED"
+                ? "Không thể tải lì xì này, vui lòng thử lại."
+                : "Có lỗi xảy ra."
+          );
           setStage("unavailable");
           return;
         }

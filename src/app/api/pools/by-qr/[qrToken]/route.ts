@@ -9,9 +9,14 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ qrT
     .from("pools")
     .select("id, name, host_name, envelope_count, status, expires_at, is_private")
     .eq("qr_token", qrToken)
-    .single();
+    .maybeSingle();
 
-  if (error || !pool) {
+  // A dead query and a genuinely missing pool used to return the same 404, so
+  // a misconfigured deployment was indistinguishable from a bad link.
+  if (error) {
+    return NextResponse.json({ error: "POOL_LOOKUP_FAILED" }, { status: 500 });
+  }
+  if (!pool) {
     return NextResponse.json({ error: "POOL_NOT_FOUND" }, { status: 404 });
   }
 
