@@ -80,8 +80,10 @@ hosting serverless (không có ổ đĩa bền vững) mà không mất dữ li�
 ## Deploy (free)
 
 1. Push code lên GitHub (repo này đã có sẵn).
-2. Tạo project Supabase Cloud (free tier) riêng cho production, chạy đủ 5
-   migration như bước "Cài đặt" ở trên.
+2. Tạo project Supabase Cloud (free tier) riêng cho production, chạy đủ cả 7
+   migration (`0001` → `0007`) như bước "Cài đặt" ở trên. Thiếu migration nào
+   thì endpoint tương ứng sẽ lỗi 500 — ví dụ thiếu `0006` là đăng ký/đăng
+   nhập hỏng vì code ghi `sessions.expires_at`.
 3. Import repo vào [Vercel](https://vercel.com) (đăng nhập bằng GitHub cho
    nhanh), điền 3 biến môi trường trong Project Settings → Environment
    Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
