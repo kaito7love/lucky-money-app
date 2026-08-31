@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLocalStorageValue } from "@/lib/useLocalStorageValue";
 import { useRouteParams } from "@/lib/useRouteParams";
 import ClaimForm from "@/components/claim/ClaimForm/ClaimForm";
@@ -28,6 +29,7 @@ interface Receipt {
 type Stage = "loading" | "form" | "closed" | "opened" | "unavailable";
 
 export default function ClaimPage() {
+  const router = useRouter();
   const params = useRouteParams<{ token: string }>();
   const storedReceiptRaw = useLocalStorageValue(`lucky_claim_${params.token}`);
   const storedReceipt = useMemo<Receipt | null>(() => {
@@ -138,7 +140,7 @@ export default function ClaimPage() {
     <div className={styles.page}>
       <button
         className={styles.backButton}
-        onClick={() => window.history.back()}
+        onClick={() => router.push("/")}
         aria-label="Quay lại"
       >
         <span className="material-symbols-outlined">arrow_back</span>
