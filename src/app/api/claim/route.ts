@@ -3,6 +3,13 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { isValidPhone, normalizePhone } from "@/lib/phone";
 import { findOrCreateUserByPhone } from "@/lib/auth";
 import { verifySecret } from "@/lib/hash";
+import {
+  callerKey,
+  clearRateLimit,
+  consumeAll,
+  CLAIM_PIN_PER_CALLER_POOL,
+  CLAIM_PIN_PER_POOL,
+} from "@/lib/rateLimit";
 
 const ERROR_MESSAGES: Record<string, string> = {
   MISSING_NAME: "Vui lòng nhập tên (số điện thoại này chưa có tài khoản).",
@@ -11,7 +18,9 @@ const ERROR_MESSAGES: Record<string, string> = {
   POOL_NOT_FOUND: "Không tìm thấy lì xì này.",
   POOL_CLOSED: "Lì xì này đã đóng.",
   ALREADY_CLAIMED: "Bạn đã nhận lì xì này rồi.",
+  TOO_MANY_PIN_ATTEMPTS: "Bạn đã nhập sai mã PIN quá nhiều lần. Vui lòng đợi ít phút rồi thử lại.",
   NO_ENVELOPES_LEFT: "Đã hết bao lì xì, chúc bạn năm sau may mắn hơn!",
+  POOL_LOOKUP_FAILED: "Không thể tải lì xì này, vui lòng thử lại.",
 };
 
 export async function POST(req: NextRequest) {
@@ -34,17 +43,44 @@ export async function POST(req: NextRequest) {
     .from("pools")
     .select("id, is_private, pin_hash")
     .eq("qr_token", qrToken)
-    .single();
+    .maybeSingle();
 
-  if (poolError || !pool) {
+  // A dead query and a genuinely missing pool used to return the same 404, so
+  // a misconfigured deployment was indistinguishable from a bad link.
+  if (poolError) {
+    return NextResponse.json(
+      { error: "POOL_LOOKUP_FAILED", message: ERROR_MESSAGES.POOL_LOOKUP_FAILED },
+      { status: 500 }
+    );
+  }
+  if (!pool) {
     return NextResponse.json({ error: "POOL_NOT_FOUND", message: ERROR_MESSAGES.POOL_NOT_FOUND }, { status: 404 });
   }
 
+  // Only private pools are rate-limited here: a public pool has no secret to
+  // guess, and its own one-envelope-per-phone rule already caps what a single
+  // guest can take. The budget is scoped to this pool so guessing at one pool
+  // cannot lock a guest out of another.
   if (pool.is_private) {
+    const caller = callerKey(req);
+    const callerBudget = `claim-pin:caller:${caller}:${pool.id}`;
+    const allowed = await consumeAll([
+      { key: callerBudget, rule: CLAIM_PIN_PER_CALLER_POOL },
+      { key: `claim-pin:pool:${pool.id}`, rule: CLAIM_PIN_PER_POOL },
+    ]);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "TOO_MANY_PIN_ATTEMPTS", message: ERROR_MESSAGES.TOO_MANY_PIN_ATTEMPTS },
+        { status: 429 }
+      );
+    }
+
     const pin = body.pin?.trim();
     if (!pin || !pool.pin_hash || !verifySecret(pin, pool.pin_hash)) {
       return NextResponse.json({ error: "INVALID_PIN", message: ERROR_MESSAGES.INVALID_PIN }, { status: 403 });
     }
+
+    await clearRateLimit(callerBudget);
   }
 
   let claimant;
