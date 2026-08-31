@@ -1,5 +1,6 @@
-import type { Dispatch, SetStateAction } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { generateEnvelopeValues, VND_DENOMINATIONS } from "@/lib/envelopes";
+import { fillFromDenominations } from "@/lib/fillFromDenominations";
 import { formatVnd } from "@/lib/formatVnd";
 import styles from "./DenominationComposer.module.css";
 
@@ -31,6 +32,8 @@ const DenominationComposer = ({
     rows,
     onRowsChange,
 }: DenominationComposerProps) => {
+    const [autoFillError, setAutoFillError] = useState<string | null>(null);
+
     const selectedTotal = rows.reduce((sum, r) => sum + r.value * r.count, 0);
     const selectedCount = rows.reduce((sum, r) => sum + r.count, 0);
     const hasTarget = targetTotal > 0 && targetCount > 0;
@@ -46,8 +49,40 @@ const DenominationComposer = ({
         diffParts.push(`${countDiff > 0 ? "thiếu" : "dư"} ${Math.abs(countDiff)} bao`);
     }
 
+    function mutateRows(updater: (prev: DenominationRow[]) => DenominationRow[]) {
+        setAutoFillError(null);
+        onRowsChange(updater);
+    }
+
+    /** With rows already picked: keep them as-is and fill just the
+     * remaining gap using only those same denominations. With none picked
+     * yet: generate a full random-but-clean split to start from. */
     function handleAutoFill() {
-        if (!hasTarget || targetCount > targetTotal) return;
+        setAutoFillError(null);
+        if (!hasTarget) return;
+
+        if (rows.length > 0) {
+            if (totalDiff === 0 && countDiff === 0) return;
+            if (totalDiff < 0 || countDiff < 0) {
+                setAutoFillError("Bạn đã chọn dư so với mục tiêu — bớt bớt bao đi trước.");
+                return;
+            }
+            const filled = fillFromDenominations(
+                totalDiff,
+                countDiff,
+                rows.map((r) => r.value)
+            );
+            if (!filled) {
+                setAutoFillError("Không thể chia đủ phần còn thiếu chỉ với các mệnh giá đã chọn — thử thêm mệnh giá khác.");
+                return;
+            }
+            const additions = new Map<number, number>();
+            for (const v of filled) additions.set(v, (additions.get(v) ?? 0) + 1);
+            onRowsChange((prev) => prev.map((r) => ({ ...r, count: r.count + (additions.get(r.value) ?? 0) })));
+            return;
+        }
+
+        if (targetCount > targetTotal) return;
         const avg = Math.floor(targetTotal / targetCount);
         const min = Math.max(1000, Math.floor(avg / 2));
         const max = Math.max(avg + 1000, Math.ceil(avg * 1.5));
@@ -74,7 +109,7 @@ const DenominationComposer = ({
                         type="button"
                         className={styles.chip}
                         onClick={() =>
-                            onRowsChange((prev) =>
+                            mutateRows((prev) =>
                                 setCount(prev, value, (prev.find((r) => r.value === value)?.count ?? 0) + 1)
                             )
                         }
@@ -93,7 +128,7 @@ const DenominationComposer = ({
                                 <button
                                     type="button"
                                     className={styles.stepBtn}
-                                    onClick={() => onRowsChange((prev) => setCount(prev, row.value, row.count - 1))}
+                                    onClick={() => mutateRows((prev) => setCount(prev, row.value, row.count - 1))}
                                     aria-label="Giảm"
                                 >
                                     −
@@ -105,13 +140,13 @@ const DenominationComposer = ({
                                     value={row.count}
                                     onChange={(e) => {
                                         const count = Number(e.target.value.replace(/\D/g, "")) || 0;
-                                        onRowsChange((prev) => setCount(prev, row.value, count));
+                                        mutateRows((prev) => setCount(prev, row.value, count));
                                     }}
                                 />
                                 <button
                                     type="button"
                                     className={styles.stepBtn}
-                                    onClick={() => onRowsChange((prev) => setCount(prev, row.value, row.count + 1))}
+                                    onClick={() => mutateRows((prev) => setCount(prev, row.value, row.count + 1))}
                                     aria-label="Tăng"
                                 >
                                     +
@@ -120,7 +155,7 @@ const DenominationComposer = ({
                             <button
                                 type="button"
                                 className={styles.removeBtn}
-                                onClick={() => onRowsChange((prev) => prev.filter((r) => r.value !== row.value))}
+                                onClick={() => mutateRows((prev) => prev.filter((r) => r.value !== row.value))}
                                 aria-label="Xoá"
                             >
                                 <span className="material-symbols-outlined">close</span>
@@ -134,11 +169,12 @@ const DenominationComposer = ({
                 type="button"
                 className={styles.autoFillBtn}
                 onClick={handleAutoFill}
-                disabled={!hasTarget || targetCount > targetTotal}
+                disabled={!hasTarget || isComplete || (rows.length === 0 && targetCount > targetTotal)}
             >
                 <span className="material-symbols-outlined">auto_awesome</span>
-                Tự động điền
+                {rows.length > 0 ? "Điền phần còn thiếu" : "Tự động điền"}
             </button>
+            {autoFillError && <p className={styles.autoFillError}>{autoFillError}</p>}
 
             <div className={`${styles.summary} ${isComplete ? styles.summaryDone : ""}`}>
                 <span className="material-symbols-outlined">

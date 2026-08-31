@@ -131,6 +131,11 @@
 .autoFillBtn .material-symbols-outlined {
     font-size: 18px;
 }
+.autoFillError {
+    font-size: 0.8125rem;
+    color: #ea2a33;
+    margin: -0.25rem 0.25rem 0;
+}
 
 .summary {
     display: flex;
