@@ -68,9 +68,3 @@ body {
     font-weight: 700;
     text-decoration: none;
 }
-
-@media (prefers-color-scheme: dark) {
-    .card {
-        background: #211111;
-    }
-}
