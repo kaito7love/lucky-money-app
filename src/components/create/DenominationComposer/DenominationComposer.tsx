@@ -70,7 +70,11 @@ const DenominationComposer = ({
                 rows.map((r) => r.value)
             );
             if (!filled) {
-                setAutoFillError("Không thể chia đúng mục tiêu chỉ với các mệnh giá đã chọn — thử thêm mệnh giá khác.");
+                setAutoFillError(
+                    rows.length > targetCount
+                        ? "Số bao ít hơn số mệnh giá đã chọn — bớt mệnh giá hoặc tăng số bao."
+                        : "Không thể chia đúng mục tiêu chỉ với các mệnh giá đã chọn — thử thêm mệnh giá khác."
+                );
                 return;
             }
             const grouped = new Map<number, number>();
