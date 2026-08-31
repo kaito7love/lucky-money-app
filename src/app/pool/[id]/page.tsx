@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
-import { supabaseBrowser } from "@/lib/supabase/client";
 import { useLocalStorageValue } from "@/lib/useLocalStorageValue";
 import { useRouteParams } from "@/lib/useRouteParams";
 import { useSession } from "@/lib/SessionContext";
@@ -41,6 +40,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   ENVELOPES_FETCH_FAILED: "Không thể tải danh sách bao lì xì.",
   POOL_NOT_ACTIVE: "Phòng lì xì này không còn đang mở.",
   CLOSE_FAILED: "Không thể đóng phòng, vui lòng thử lại.",
+  POOL_LOOKUP_FAILED: "Không thể tải lì xì này, vui lòng thử lại.",
 };
 
 /** Pure fetch + parse, no state — callers apply the result via .then(). authQuery is
@@ -51,6 +51,10 @@ async function fetchPoolData(id: string, authQuery: string): Promise<{ ok: boole
   const json = await res.json();
   return { ok: res.ok, json };
 }
+
+/** Fast enough that a host watching guests scan sees names appear as they go,
+ * slow enough that a pool left open on a screen all evening stays cheap. */
+const POLL_INTERVAL_MS = 5000;
 
 function buildClaimUrl(qrToken: string): string {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -84,26 +88,31 @@ export default function PoolHostPage() {
     QRCode.toDataURL(buildClaimUrl(data.pool.qr_token), { width: 260, margin: 1 }).then(setQrDataUrl);
   }, [data]);
 
+  // Polled rather than subscribed. The Supabase realtime path this replaced
+  // never fired: postgres_changes needs the subscribing role to hold select on
+  // the table, and the browser connects as anon, which is granted nothing (see
+  // 0002_grants.sql). Granting anon select would have made it work by exposing
+  // every envelope's claimed_phone and value over the REST API, so the live
+  // view is driven from the host-authenticated endpoint instead.
   useEffect(() => {
     if (!authQuery) return;
-    const channel = supabaseBrowser
-      .channel(`pool-${params.id}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "envelopes", filter: `pool_id=eq.${params.id}` },
-        () => {
-          fetchPoolData(params.id, authQuery).then(({ ok, json }) => {
-            if (!ok) {
-              setError((json.error && ERROR_MESSAGES[json.error]) ?? "Không thể tải dữ liệu, vui lòng thử lại.");
-              return;
-            }
-            setData(json);
-          });
-        }
-      )
-      .subscribe();
+
+    let cancelled = false;
+    const refresh = () => {
+      // A backgrounded tab would otherwise keep polling for nothing.
+      if (document.visibilityState !== "visible") return;
+      fetchPoolData(params.id, authQuery).then(({ ok, json }) => {
+        if (cancelled || !ok) return;
+        setData(json);
+      });
+    };
+
+    const timer = setInterval(refresh, POLL_INTERVAL_MS);
+    document.addEventListener("visibilitychange", refresh);
     return () => {
-      supabaseBrowser.removeChannel(channel);
+      cancelled = true;
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", refresh);
     };
   }, [authQuery, params.id]);
 
