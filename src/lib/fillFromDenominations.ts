@@ -6,6 +6,27 @@ function gcd(a: number, b: number): number {
  * freezing the tab — this is a manual button click, not a hot path. */
 const MAX_DP_CELLS = 10_000_000;
 
+/** Triangular/pyramid shape over `k` sorted positions: low at both ends,
+ * peaking in the middle (e.g. k=6 → [1,2,3,3,2,1]). */
+function bellWeights(k: number): number[] {
+    return Array.from({ length: k }, (_, i) => Math.min(i, k - 1 - i) + 1);
+}
+
+/** Bell-shaped target count per denomination, summing to exactly `count`
+ * (largest-remainder rounding keeps the total exact). */
+function idealCounts(count: number, weights: number[]): number[] {
+    const totalWeight = weights.reduce((a, b) => a + b, 0);
+    const raw = weights.map((w) => (count * w) / totalWeight);
+    const floors = raw.map(Math.floor);
+    const remaining = count - floors.reduce((a, b) => a + b, 0);
+    const byFraction = raw
+        .map((r, i) => [r - Math.floor(r), i] as const)
+        .sort((a, b) => b[0] - a[0]);
+    const result = [...floors];
+    for (let i = 0; i < remaining; i++) result[byFraction[i][1]] += 1;
+    return result;
+}
+
 /**
  * Finds `count` values, each drawn from `denominations` (repetition
  * allowed), summing exactly to `total` — or null if no such combination
@@ -13,10 +34,15 @@ const MAX_DP_CELLS = 10_000_000;
  * using only the notes the host already picked, rather than introducing
  * new ones.
  *
- * Exact bounded coin-change via DP (`dp[n][t]` = can `n` coins sum to
- * `t`), scaled down to the denominations' GCD to keep the table small.
- * Backtracking picks randomly among valid options at each step so the
- * result varies between calls instead of always favoring one denomination.
+ * Feasibility is decided by exact bounded coin-change DP (`dp[n][t]` = can
+ * `n` coins sum to `t`), scaled down to the denominations' GCD to keep the
+ * table small. Which feasible coin gets picked at each step is not random:
+ * it walks the DP forward, at every step choosing — among denominations
+ * that still leave the remainder solvable — the one furthest behind its
+ * bell-shaped ideal share (`idealCounts`). That biases the result toward
+ * fewer coins at the smallest/largest denominations and more in the
+ * middle, without ever picking a denomination that would make the exact
+ * total or count unreachable.
  */
 export function fillFromDenominations(
     total: number,
@@ -30,7 +56,8 @@ export function fillFromDenominations(
     const g = denominations.reduce((a, b) => gcd(a, b));
     if (total % g !== 0) return null;
 
-    const units = [...new Set(denominations.map((d) => d / g))].sort((a, b) => a - b);
+    const values = [...new Set(denominations)].sort((a, b) => a - b);
+    const units = values.map((v) => v / g);
     const totalUnits = total / g;
     if (count * (totalUnits + 1) > MAX_DP_CELLS) return null;
 
@@ -48,15 +75,32 @@ export function fillFromDenominations(
     }
     if (!dp[count][totalUnits]) return null;
 
-    const result: number[] = [];
-    let n = count;
-    let t = totalUnits;
-    while (n > 0) {
-        const options = units.filter((u) => t - u >= 0 && dp[n - 1][t - u]);
-        const u = options[Math.floor(Math.random() * options.length)];
-        result.push(u * g);
-        n -= 1;
-        t -= u;
+    const ideal = idealCounts(count, bellWeights(values.length));
+    const placed = new Array(values.length).fill(0);
+    let placedCount = 0;
+    let placedUnits = 0;
+    while (placedCount < count) {
+        const remainingCount = count - placedCount - 1;
+        let bestIndex = -1;
+        let bestDeficit = -Infinity;
+        for (let i = 0; i < units.length; i++) {
+            const u = units[i];
+            if (placedUnits + u > totalUnits) continue;
+            if (!dp[remainingCount][totalUnits - placedUnits - u]) continue;
+            const deficit = ideal[i] - placed[i];
+            if (deficit > bestDeficit) {
+                bestDeficit = deficit;
+                bestIndex = i;
+            }
+        }
+        // dp[count][totalUnits] being true guarantees a feasible choice
+        // exists at every step; bestIndex === -1 would mean that guarantee
+        // was violated somewhere above.
+        if (bestIndex === -1) return null;
+        placed[bestIndex] += 1;
+        placedUnits += units[bestIndex];
+        placedCount += 1;
     }
-    return result;
+
+    return values.flatMap((value, i) => Array(placed[i]).fill(value));
 }
