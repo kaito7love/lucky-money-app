@@ -6,13 +6,19 @@ function gcd(a: number, b: number): number {
  * freezing the tab — this is a manual button click, not a hot path. */
 const MAX_DP_CELLS = 10_000_000;
 
-/** How many candidate solutions to generate before scoring/ranking them. */
-const POOL_SIZE = 40;
-/** Random pick lands on one of this many best-scoring candidates. */
+/** How many candidate solutions to generate before scoring/ranking them.
+ * Generously sized because the pool is deduplicated before ranking: walks
+ * that land on an answer already found contribute nothing, and a target with
+ * few valid splits burns most of the pool rediscovering the same ones. */
+const POOL_SIZE = 120;
+/** Random pick lands on one of this many best-scoring *distinct* candidates. */
 const TOP_N = 6;
 /** Higher = the random walk favors the bell-shaped ideal less strongly,
- * giving more varied (but still ideal-leaning) candidates in the pool. */
-const WALK_TEMPERATURE = 12;
+ * giving more varied (but still ideal-leaning) candidates in the pool.
+ * Shape is ultimately defended by the scoring pass, so this leans toward
+ * exploration: too low and every walk converges on the single best-shaped
+ * answer, leaving nothing to pick between and making "Chia lại" a no-op. */
+const WALK_TEMPERATURE = 40;
 
 /** Triangular/pyramid shape over `k` sorted positions: low at both ends,
  * peaking in the middle (e.g. k=6 → [1,2,3,3,2,1]). */
@@ -174,11 +180,16 @@ export function fillFromDenominations(
     const ideal = idealCounts(count, bellWeights(k));
     const startingCounts = new Array(k).fill(1);
 
-    const pool: number[][] = [];
+    // Deduplicated: independent walks routinely land on the same split, and a
+    // "top 6" made of six copies of one answer would make every re-roll return
+    // that answer. Ranking distinct splits is what gives the button its
+    // variety — see TOP_N.
+    const seen = new Map<string, number[]>();
     for (let i = 0; i < POOL_SIZE; i++) {
         const candidate = randomWalk(dp, units, remainingCount, remainingUnits, ideal, startingCounts);
-        if (candidate) pool.push(candidate);
+        if (candidate) seen.set(candidate.join(","), candidate);
     }
+    const pool = [...seen.values()];
     if (pool.length === 0) return null;
 
     const ranked = pool
