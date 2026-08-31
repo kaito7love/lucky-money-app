@@ -34,7 +34,7 @@ function formatCountdown(ms: number): string {
 const LixiMessageCard = ({ senderName, name, totalAmount, envelopeCount, qrToken }: LixiMessageCardProps) => {
     const router = useRouter();
     const [preview, setPreview] = useState<PoolPreview | null>(null);
-    const [msLeft, setMsLeft] = useState<number | null>(null);
+    const [now, setNow] = useState(() => Date.now());
 
     useEffect(() => {
         let cancelled = false;
@@ -56,19 +56,18 @@ const LixiMessageCard = ({ senderName, name, totalAmount, envelopeCount, qrToken
     }, [qrToken]);
 
     // Re-derived from the absolute deadline on every tick rather than counted
-    // down from a duration, so a reload doesn't restart the clock.
+    // down from a duration, so a reload doesn't restart the clock. Only the
+    // clock itself lives in state — the remaining time is derived during
+    // render, so no effect has to write state to keep the two in sync.
+    const deadline = preview?.expiresAt ? new Date(preview.expiresAt).getTime() : null;
+
     useEffect(() => {
-        const expiresAt = preview?.expiresAt;
-        if (!expiresAt) {
-            setMsLeft(null);
-            return;
-        }
-        const deadline = new Date(expiresAt).getTime();
-        const tick = () => setMsLeft(deadline - Date.now());
-        tick();
-        const timer = setInterval(tick, 1000);
+        if (deadline === null) return;
+        const timer = setInterval(() => setNow(Date.now()), 1000);
         return () => clearInterval(timer);
-    }, [preview?.expiresAt]);
+    }, [deadline]);
+
+    const msLeft = deadline === null ? null : deadline - now;
 
     // The server flips an expired pool's status on the next read, but the card
     // shouldn't stay openable until then.
