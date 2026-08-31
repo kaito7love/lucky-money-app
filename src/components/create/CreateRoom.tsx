@@ -7,6 +7,7 @@ import CreateHeader from "./Header/CreateHeader";
 import CreateHero from "./Hero/CreateHero";
 import PrivacySettings from "./Privacy/PrivacySettings";
 import AmountInput from "./AmountInput/AmountInput";
+import DenominationComposer, { type DenominationRow } from "./DenominationComposer/DenominationComposer";
 import { useSession } from "@/lib/SessionContext";
 
 type Mode = "random" | "fixed";
@@ -41,7 +42,7 @@ const CreateRoom = () => {
     const [mode, setMode] = useState<Mode>("random");
     const [minValue, setMinValue] = useState("");
     const [maxValue, setMaxValue] = useState("");
-    const [fixedValuesText, setFixedValuesText] = useState("");
+    const [denominationRows, setDenominationRows] = useState<DenominationRow[]>([]);
     const [expiresInHours, setExpiresInHours] = useState("");
     const [isPrivate, setIsPrivate] = useState(false);
     const [pin, setPin] = useState("");
@@ -54,6 +55,13 @@ const CreateRoom = () => {
         setHostPhone(user.phone);
         setHostName(user.name);
     }
+
+    const fixedModeReady =
+        mode !== "fixed" ||
+        (Number(totalAmount) > 0 &&
+            Number(envelopeCount) > 0 &&
+            denominationRows.reduce((sum, r) => sum + r.value * r.count, 0) === Number(totalAmount) &&
+            denominationRows.reduce((sum, r) => sum + r.count, 0) === Number(envelopeCount));
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -76,12 +84,7 @@ const CreateRoom = () => {
             body.min_value = Number(minValue);
             body.max_value = Number(maxValue);
         } else {
-            const values = fixedValuesText
-                .split(/[\n,]+/)
-                .map((v) => v.trim())
-                .filter(Boolean)
-                .map(Number);
-            body.fixed_values = values;
+            body.fixed_values = denominationRows.flatMap((r) => Array(r.count).fill(r.value));
         }
 
         if (expiresInHours) {
@@ -224,19 +227,13 @@ const CreateRoom = () => {
                         </div>
                     ) : (
                         <div className={styles.inputGroup}>
-                            <label>
-                                Giá trị từng bao (cách nhau bằng dấu phẩy hoặc
-                                xuống dòng)
-                            </label>
-                            <textarea
-                                rows={3}
-                                placeholder="50000, 50000, 20000, 10000..."
-                                value={fixedValuesText}
-                                onChange={(e) =>
-                                    setFixedValuesText(e.target.value)
-                                }
-                                required
-                            ></textarea>
+                            <label>Giá trị từng bao</label>
+                            <DenominationComposer
+                                targetTotal={Number(totalAmount)}
+                                targetCount={Number(envelopeCount)}
+                                rows={denominationRows}
+                                onRowsChange={setDenominationRows}
+                            />
                         </div>
                     )}
 
@@ -263,7 +260,7 @@ const CreateRoom = () => {
                         <button
                             className={styles.submitBtn}
                             type="submit"
-                            disabled={submitting}
+                            disabled={submitting || !fixedModeReady}
                         >
                             <span>
                                 {submitting

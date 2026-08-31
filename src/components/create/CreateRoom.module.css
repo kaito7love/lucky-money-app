@@ -37,8 +37,8 @@
     font-weight: 700;
     margin-left: 0.25rem;
 }
-.inputGroup input,
-.inputGroup textarea {
+.inputGroup > input,
+.inputGroup > textarea {
     width: 100%;
     background: white;
     border: 1px solid #e5e7eb;
@@ -47,8 +47,8 @@
     font-size: 1rem;
     font-family: inherit;
 }
-.inputGroup input:focus,
-.inputGroup textarea:focus {
+.inputGroup > input:focus,
+.inputGroup > textarea:focus {
     outline: none;
     border-color: #ea2a33;
     box-shadow: 0 0 0 2px rgba(234, 42, 51, 0.1);
