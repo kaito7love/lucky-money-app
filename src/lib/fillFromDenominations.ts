@@ -30,19 +30,19 @@ function idealCounts(count: number, weights: number[]): number[] {
 /**
  * Finds `count` values, each drawn from `denominations` (repetition
  * allowed), summing exactly to `total` — or null if no such combination
- * exists. Used to fill the *remaining* gap in the denomination composer
- * using only the notes the host already picked, rather than introducing
+ * exists. Used by the denomination composer to (re)distribute its target
+ * across only the notes the host already picked, rather than introducing
  * new ones.
  *
  * Feasibility is decided by exact bounded coin-change DP (`dp[n][t]` = can
  * `n` coins sum to `t`), scaled down to the denominations' GCD to keep the
- * table small. Which feasible coin gets picked at each step is not random:
- * it walks the DP forward, at every step choosing — among denominations
- * that still leave the remainder solvable — the one furthest behind its
- * bell-shaped ideal share (`idealCounts`). That biases the result toward
+ * table small. Which feasible coin gets picked at each step walks the DP
+ * forward: among denominations that still leave the remainder solvable,
+ * one is chosen at random, weighted toward whichever is furthest behind
+ * its bell-shaped ideal share (`idealCounts`). That biases results toward
  * fewer coins at the smallest/largest denominations and more in the
- * middle, without ever picking a denomination that would make the exact
- * total or count unreachable.
+ * middle — without ever picking a denomination that would make the exact
+ * total or count unreachable — while still varying from call to call.
  */
 export function fillFromDenominations(
     total: number,
@@ -81,24 +81,37 @@ export function fillFromDenominations(
     let placedUnits = 0;
     while (placedCount < count) {
         const remainingCount = count - placedCount - 1;
-        let bestIndex = -1;
-        let bestDeficit = -Infinity;
+        const candidates: number[] = [];
         for (let i = 0; i < units.length; i++) {
             const u = units[i];
             if (placedUnits + u > totalUnits) continue;
             if (!dp[remainingCount][totalUnits - placedUnits - u]) continue;
-            const deficit = ideal[i] - placed[i];
-            if (deficit > bestDeficit) {
-                bestDeficit = deficit;
-                bestIndex = i;
-            }
+            candidates.push(i);
         }
         // dp[count][totalUnits] being true guarantees a feasible choice
-        // exists at every step; bestIndex === -1 would mean that guarantee
-        // was violated somewhere above.
-        if (bestIndex === -1) return null;
-        placed[bestIndex] += 1;
-        placedUnits += units[bestIndex];
+        // exists at every step; an empty candidates list would mean that
+        // guarantee was violated somewhere above.
+        if (candidates.length === 0) return null;
+
+        // Weighted random pick: shift deficits to all-positive so every
+        // feasible candidate keeps some chance, favoring the one(s)
+        // furthest behind their ideal share.
+        const deficits = candidates.map((i) => ideal[i] - placed[i]);
+        const minDeficit = Math.min(...deficits);
+        const weights = deficits.map((d) => d - minDeficit + 1);
+        const totalWeight = weights.reduce((a, b) => a + b, 0);
+        let r = Math.random() * totalWeight;
+        let chosen = candidates[candidates.length - 1];
+        for (let j = 0; j < candidates.length; j++) {
+            r -= weights[j];
+            if (r <= 0) {
+                chosen = candidates[j];
+                break;
+            }
+        }
+
+        placed[chosen] += 1;
+        placedUnits += units[chosen];
         placedCount += 1;
     }
 

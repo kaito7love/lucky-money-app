@@ -54,31 +54,32 @@ const DenominationComposer = ({
         onRowsChange(updater);
     }
 
-    /** With rows already picked: keep them as-is and fill just the
-     * remaining gap using only those same denominations. With none picked
+    /** With rows already picked: recompute the whole target from scratch
+     * using only those same denominations (handles both "còn thiếu" and
+     * "dư" alike, and gives a different-looking split each click since
+     * fillFromDenominations weighs its choice randomly). With none picked
      * yet: generate a full random-but-clean split to start from. */
     function handleAutoFill() {
         setAutoFillError(null);
         if (!hasTarget) return;
 
         if (rows.length > 0) {
-            if (totalDiff === 0 && countDiff === 0) return;
-            if (totalDiff < 0 || countDiff < 0) {
-                setAutoFillError("Bạn đã chọn dư so với mục tiêu — bớt bớt bao đi trước.");
-                return;
-            }
             const filled = fillFromDenominations(
-                totalDiff,
-                countDiff,
+                targetTotal,
+                targetCount,
                 rows.map((r) => r.value)
             );
             if (!filled) {
-                setAutoFillError("Không thể chia đủ phần còn thiếu chỉ với các mệnh giá đã chọn — thử thêm mệnh giá khác.");
+                setAutoFillError("Không thể chia đúng mục tiêu chỉ với các mệnh giá đã chọn — thử thêm mệnh giá khác.");
                 return;
             }
-            const additions = new Map<number, number>();
-            for (const v of filled) additions.set(v, (additions.get(v) ?? 0) + 1);
-            onRowsChange((prev) => prev.map((r) => ({ ...r, count: r.count + (additions.get(r.value) ?? 0) })));
+            const grouped = new Map<number, number>();
+            for (const v of filled) grouped.set(v, (grouped.get(v) ?? 0) + 1);
+            onRowsChange(
+                [...grouped.entries()]
+                    .map(([value, count]) => ({ value, count }))
+                    .sort((a, b) => a.value - b.value)
+            );
             return;
         }
 
@@ -169,10 +170,10 @@ const DenominationComposer = ({
                 type="button"
                 className={styles.autoFillBtn}
                 onClick={handleAutoFill}
-                disabled={!hasTarget || isComplete || (rows.length === 0 && targetCount > targetTotal)}
+                disabled={!hasTarget || (rows.length === 0 && targetCount > targetTotal)}
             >
                 <span className="material-symbols-outlined">auto_awesome</span>
-                {rows.length > 0 ? "Điền phần còn thiếu" : "Tự động điền"}
+                {rows.length > 0 ? "Chia lại" : "Tự động điền"}
             </button>
             {autoFillError && <p className={styles.autoFillError}>{autoFillError}</p>}
 

@@ -31,7 +31,7 @@ function splitInteger(total: number, count: number, min: number, max: number): n
 
 /** Real VND note denominations. Single source of truth shared with the
  * create-room UI's denomination picker. */
-export const VND_DENOMINATIONS = [1000, 2000, 5000, 10000, 20000, 50000, 100000];
+export const VND_DENOMINATIONS = [5000, 10000, 20000, 50000, 100000, 200000, 500000];
 
 /** Largest first — tried in order so envelope values land on round amounts
  * instead of arbitrary integers. */
