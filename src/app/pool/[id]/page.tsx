@@ -6,6 +6,7 @@ import { useLocalStorageValue } from "@/lib/useLocalStorageValue";
 import { useRouteParams } from "@/lib/useRouteParams";
 import { useSession } from "@/lib/SessionContext";
 import { POOL_STATUS_LABEL } from "@/lib/poolStatusLabel";
+import { apiErrorMessage, readJson, type ApiErrorBody } from "@/lib/apiError";
 import ShareRoom from "@/components/share/ShareRoom";
 
 interface Claim {
@@ -45,11 +46,14 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 /** Pure fetch + parse, no state — callers apply the result via .then(). authQuery is
  * either "host_token=..." (this device created the pool) or "session_token=..."
- * (recovered by logging in as the account whose phone matches the pool's host). */
-async function fetchPoolData(id: string, authQuery: string): Promise<{ ok: boolean; json: PoolData & { error?: string } }> {
+ * (recovered by logging in as the account whose phone matches the pool's host).
+ * The response comes back alongside the body so callers can word a failure from
+ * its status; parsing through readJson keeps a bodiless 500 from rejecting here,
+ * where nothing is watching for it and the page would just sit on "Đang tải...". */
+async function fetchPoolData(id: string, authQuery: string): Promise<{ res: Response; json: PoolData & ApiErrorBody }> {
   const res = await fetch(`/api/pools/${id}?${authQuery}`);
-  const json = await res.json();
-  return { ok: res.ok, json };
+  const json = await readJson<PoolData & ApiErrorBody>(res);
+  return { res, json };
 }
 
 /** Fast enough that a host watching guests scan sees names appear as they go,
@@ -74,9 +78,9 @@ export default function PoolHostPage() {
 
   useEffect(() => {
     if (!authQuery) return;
-    fetchPoolData(params.id, authQuery).then(({ ok, json }) => {
-      if (!ok) {
-        setError((json.error && ERROR_MESSAGES[json.error]) ?? "Không thể tải dữ liệu, vui lòng thử lại.");
+    fetchPoolData(params.id, authQuery).then(({ res, json }) => {
+      if (!res.ok) {
+        setError(apiErrorMessage(res, json, ERROR_MESSAGES));
         return;
       }
       setData(json);
@@ -101,8 +105,8 @@ export default function PoolHostPage() {
     const refresh = () => {
       // A backgrounded tab would otherwise keep polling for nothing.
       if (document.visibilityState !== "visible") return;
-      fetchPoolData(params.id, authQuery).then(({ ok, json }) => {
-        if (cancelled || !ok) return;
+      fetchPoolData(params.id, authQuery).then(({ res, json }) => {
+        if (cancelled || !res.ok) return;
         setData(json);
       });
     };
@@ -148,12 +152,12 @@ export default function PoolHostPage() {
       body: JSON.stringify(hostToken ? { host_token: hostToken } : { session_token: sessionToken }),
     });
     if (res.ok) {
-      fetchPoolData(params.id, authQuery).then(({ ok, json }) => {
-        if (ok) setData(json);
+      fetchPoolData(params.id, authQuery).then(({ res: refreshed, json }) => {
+        if (refreshed.ok) setData(json);
       });
     } else {
-      const json = await res.json();
-      alert((json.error && ERROR_MESSAGES[json.error]) ?? "Không thể đóng phòng, vui lòng thử lại.");
+      const json = await readJson<ApiErrorBody>(res);
+      alert(apiErrorMessage(res, json, ERROR_MESSAGES));
     }
   }
 

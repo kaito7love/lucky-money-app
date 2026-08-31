@@ -3,6 +3,7 @@
 import { useState } from "react";
 import styles from "./LixiComposer.module.css";
 import { useSession } from "@/lib/SessionContext";
+import { apiErrorMessage, NETWORK_ERROR_MESSAGE, readJson } from "@/lib/apiError";
 
 interface ChatLixiMessage {
     id: string;
@@ -32,6 +33,13 @@ const ERROR_MESSAGES: Record<string, string> = {
     INVALID_RANGE: "Không thể chia đều tổng tiền cho số bao này, thử số khác.",
 };
 
+interface CreateLixiResponse {
+    message: ChatLixiMessage;
+    pool_id?: string;
+    host_token?: string;
+    error?: string;
+}
+
 const LixiComposer = ({ roomId, onCreated, onClose }: LixiComposerProps) => {
     const { token } = useSession();
     const [name, setName] = useState("");
@@ -56,9 +64,11 @@ const LixiComposer = ({ roomId, onCreated, onClose }: LixiComposerProps) => {
                     envelope_count: Number(envelopeCount),
                 }),
             });
-            const data = await res.json();
+            const data = await readJson<CreateLixiResponse>(res);
             if (!res.ok) {
-                setError(ERROR_MESSAGES[data.error] ?? "Không thể tạo lì xì, vui lòng thử lại.");
+                // Only the code: this route's `message` is the chat message it
+                // created, not error text.
+                setError(apiErrorMessage(res, { error: data.error }, ERROR_MESSAGES));
                 setSubmitting(false);
                 return;
             }
@@ -67,7 +77,7 @@ const LixiComposer = ({ roomId, onCreated, onClose }: LixiComposerProps) => {
             }
             onCreated(data.message);
         } catch {
-            setError("Không thể kết nối máy chủ.");
+            setError(NETWORK_ERROR_MESSAGE);
             setSubmitting(false);
         }
     }

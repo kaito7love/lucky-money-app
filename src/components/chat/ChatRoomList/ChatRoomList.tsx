@@ -6,6 +6,7 @@ import styles from "./ChatRoomList.module.css";
 import { useBackOrHome } from "@/lib/useBackOrHome";
 import { useSession } from "@/lib/SessionContext";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
+import { readJson } from "@/lib/apiError";
 import MobileNav from "@/components/layout/MobileNav";
 
 interface ChatRoomSummary {
@@ -25,7 +26,7 @@ const ChatRoomList = () => {
     useEffect(() => {
         if (!user) return;
         fetch("/api/chat/rooms")
-            .then((res) => res.json())
+            .then((res) => readJson<{ rooms?: ChatRoomSummary[] }>(res))
             .then((data) => setRooms(data.rooms ?? []))
             .finally(() => setLoading(false));
     }, [user]);

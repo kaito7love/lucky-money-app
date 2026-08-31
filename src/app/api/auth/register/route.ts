@@ -7,6 +7,9 @@ const ERROR_MESSAGES: Record<string, string> = {
     INVALID_PHONE: "Số điện thoại không hợp lệ.",
     INVALID_PASSWORD: "Mật khẩu phải có ít nhất 6 ký tự.",
     PHONE_TAKEN: "Số điện thoại này đã được đăng ký.",
+    USER_LOOKUP_FAILED: "Không thể kiểm tra số điện thoại, vui lòng thử lại.",
+    USER_CREATE_FAILED: "Không thể tạo tài khoản, vui lòng thử lại.",
+    SESSION_CREATE_FAILED: "Không thể tạo phiên đăng nhập, vui lòng thử lại.",
 };
 
 export async function POST(req: NextRequest) {
@@ -31,11 +34,21 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "INVALID_PASSWORD", message: ERROR_MESSAGES.INVALID_PASSWORD }, { status: 400 });
     }
 
-    if (await findUserByPhone(phone)) {
-        return NextResponse.json({ error: "PHONE_TAKEN", message: ERROR_MESSAGES.PHONE_TAKEN }, { status: 409 });
-    }
+    // Unwrapped, a throw from any of these three leaves Next to answer with a
+    // bare 500 and no body — which the sign-up form can only describe in the
+    // vaguest terms. Naming the failing step keeps a broken database (or an
+    // unapplied migration) distinguishable from a rejected registration.
+    try {
+        if (await findUserByPhone(phone)) {
+            return NextResponse.json({ error: "PHONE_TAKEN", message: ERROR_MESSAGES.PHONE_TAKEN }, { status: 409 });
+        }
 
-    const user = await createUser(name, phone, password);
-    const token = await createSession(user.id);
-    return NextResponse.json({ session_token: token, user });
+        const user = await createUser(name, phone, password);
+        const token = await createSession(user.id);
+        return NextResponse.json({ session_token: token, user });
+    } catch (err) {
+        const code = err instanceof Error ? err.message : "REGISTER_FAILED";
+        const message = ERROR_MESSAGES[code] ?? "Máy chủ gặp lỗi, vui lòng thử lại.";
+        return NextResponse.json({ error: code, message }, { status: 500 });
+    }
 }

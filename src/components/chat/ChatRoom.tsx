@@ -10,6 +10,7 @@ import LixiMessageCard from "@/components/chat/LixiMessageCard/LixiMessageCard";
 import { useSession } from "@/lib/SessionContext";
 import { getChatRoom } from "@/lib/chatRooms";
 import { chatDayKey, formatChatDate } from "@/lib/formatChatDate";
+import { readJson } from "@/lib/apiError";
 
 interface ChatMessage {
     id: string;
@@ -57,7 +58,7 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
         if (!room) return;
         let cancelled = false;
         fetch(`/api/chat/messages?room_id=${roomId}`)
-            .then((res) => res.json())
+            .then((res) => readJson<{ messages?: ChatMessage[] }>(res))
             .then((data) => {
                 if (cancelled) return;
                 setMessages(data.messages ?? []);

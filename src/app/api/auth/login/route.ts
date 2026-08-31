@@ -13,6 +13,8 @@ import {
 const ERROR_MESSAGES: Record<string, string> = {
     INVALID_CREDENTIALS: "Số điện thoại hoặc mật khẩu không đúng.",
     TOO_MANY_ATTEMPTS: "Bạn đã thử quá nhiều lần. Vui lòng đợi ít phút rồi thử lại.",
+    USER_LOOKUP_FAILED: "Không thể kiểm tra số điện thoại, vui lòng thử lại.",
+    SESSION_CREATE_FAILED: "Không thể tạo phiên đăng nhập, vui lòng thử lại.",
 };
 
 export async function POST(req: NextRequest) {
@@ -41,19 +43,29 @@ export async function POST(req: NextRequest) {
         );
     }
 
-    const user = await verifyLogin(phone, password);
-    if (!user) {
-        return NextResponse.json(
-            { error: "INVALID_CREDENTIALS", message: ERROR_MESSAGES.INVALID_CREDENTIALS },
-            { status: 401 }
-        );
+    // Same reasoning as the register route: left unwrapped, a throw from the
+    // lookup or the session insert is answered by Next as a bare 500 with no
+    // body, and the sign-in form has nothing to tell the user but a guess. The
+    // rate-limit calls stay outside — they fail open by design and never throw.
+    try {
+        const user = await verifyLogin(phone, password);
+        if (!user) {
+            return NextResponse.json(
+                { error: "INVALID_CREDENTIALS", message: ERROR_MESSAGES.INVALID_CREDENTIALS },
+                { status: 401 }
+            );
+        }
+
+        // Only the caller+account budget is forgiven. The caller-wide one is what
+        // limits how many different accounts one source may probe, so a success
+        // must not reset it.
+        await clearRateLimit(`login:caller-account:${caller}:${phone}`);
+
+        const token = await createSession(user.id);
+        return NextResponse.json({ session_token: token, user });
+    } catch (err) {
+        const code = err instanceof Error ? err.message : "LOGIN_FAILED";
+        const message = ERROR_MESSAGES[code] ?? "Máy chủ gặp lỗi, vui lòng thử lại.";
+        return NextResponse.json({ error: code, message }, { status: 500 });
     }
-
-    // Only the caller+account budget is forgiven. The caller-wide one is what
-    // limits how many different accounts one source may probe, so a success
-    // must not reset it.
-    await clearRateLimit(`login:caller-account:${caller}:${phone}`);
-
-    const token = await createSession(user.id);
-    return NextResponse.json({ session_token: token, user });
 }

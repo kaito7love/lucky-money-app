@@ -9,8 +9,15 @@ import PrivacySettings from "./Privacy/PrivacySettings";
 import AmountInput from "./AmountInput/AmountInput";
 import DenominationComposer, { type DenominationRow } from "./DenominationComposer/DenominationComposer";
 import { useSession } from "@/lib/SessionContext";
+import { apiErrorMessage, NETWORK_ERROR_MESSAGE, readJson } from "@/lib/apiError";
 
 type Mode = "random" | "fixed";
+
+interface CreatePoolResponse {
+    id: string;
+    host_token: string;
+    error?: string;
+}
 
 const ERROR_MESSAGES: Record<string, string> = {
     MISSING_NAME: "Vui lòng nhập tên phòng.",
@@ -98,16 +105,16 @@ const CreateRoom = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
             });
-            const data = await res.json();
+            const data = await readJson<CreatePoolResponse>(res);
             if (!res.ok) {
-                setError(ERROR_MESSAGES[data.error] ?? "Có lỗi xảy ra, vui lòng thử lại.");
+                setError(apiErrorMessage(res, data, ERROR_MESSAGES));
                 setSubmitting(false);
                 return;
             }
             localStorage.setItem(`lucky_host_token_${data.id}`, data.host_token);
             router.push(`/pool/${data.id}`);
         } catch {
-            setError("Không thể kết nối máy chủ.");
+            setError(NETWORK_ERROR_MESSAGE);
             setSubmitting(false);
         }
     }
