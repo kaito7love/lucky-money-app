@@ -74,15 +74,9 @@ export async function createSession(userId: string): Promise<string> {
         .select("token")
         .single();
     if (error || !data) throw new Error("SESSION_CREATE_FAILED");
-
-    // Piggy-backs the sweep on the rare write instead of a cron: logins are
-    // infrequent enough that this is cheap, and an idle project never pays.
-    // Deliberately not awaited-on-failure — tidying must not break signing in.
-    await supabaseAdmin.rpc("delete_expired_sessions").then(
-        () => undefined,
-        () => undefined
-    );
-
+    // Expired rows are swept by /api/cron/keepalive, which has to run daily
+    // anyway to keep Supabase from pausing. Doing it here too would just add a
+    // round-trip to every sign-in.
     return data.token;
 }
 
