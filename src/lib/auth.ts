@@ -64,21 +64,39 @@ export async function findOrCreateUserByPhone(phone: string, name?: string): Pro
     return createUser(trimmedName, phone, DEFAULT_PASSWORD);
 }
 
+const SESSION_TTL_DAYS = 30;
+
 export async function createSession(userId: string): Promise<string> {
+    const expiresAt = new Date(Date.now() + SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
     const { data, error } = await supabaseAdmin
         .from("sessions")
-        .insert({ user_id: userId })
+        .insert({ user_id: userId, expires_at: expiresAt.toISOString() })
         .select("token")
         .single();
     if (error || !data) throw new Error("SESSION_CREATE_FAILED");
+
+    // Piggy-backs the sweep on the rare write instead of a cron: logins are
+    // infrequent enough that this is cheap, and an idle project never pays.
+    // Deliberately not awaited-on-failure — tidying must not break signing in.
+    await supabaseAdmin.rpc("delete_expired_sessions").then(
+        () => undefined,
+        () => undefined
+    );
+
     return data.token;
 }
 
 export async function getUserBySessionToken(token: string): Promise<PublicUser | null> {
+    // Filtered in the query rather than fetched-then-compared so an expired
+    // row can never be read as a live session by a later code path. The
+    // comparison uses this server's clock against a deadline this server set,
+    // so the two agree; skew against the database only matters at second
+    // granularity, which a 30-day TTL does not care about.
     const { data: session } = await supabaseAdmin
         .from("sessions")
         .select("user_id")
         .eq("token", token)
+        .gt("expires_at", new Date().toISOString())
         .maybeSingle();
     if (!session) return null;
 
