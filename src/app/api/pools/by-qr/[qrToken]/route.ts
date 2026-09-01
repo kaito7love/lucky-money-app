@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { effectivePoolStatus } from "@/lib/poolStatus";
+import { isMalformedValueError } from "@/lib/pgError";
 
 /** Public view for guests scanning the QR — no host_token, no claimant list. */
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ qrToken: string }> }) {
@@ -12,8 +13,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ qrT
     .maybeSingle();
 
   // A dead query and a genuinely missing pool used to return the same 404, so
-  // a misconfigured deployment was indistinguishable from a bad link.
-  if (error) {
+  // a misconfigured deployment was indistinguishable from a bad link. A token
+  // that is not a uuid is neither: it is a bad link that never reached the
+  // table, and belongs with the 404 below.
+  if (error && !isMalformedValueError(error)) {
     return NextResponse.json({ error: "POOL_LOOKUP_FAILED" }, { status: 500 });
   }
   if (!pool) {

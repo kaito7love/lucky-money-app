@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { isValidPhone, normalizePhone } from "@/lib/phone";
 import { findOrCreateUserByPhone } from "@/lib/auth";
 import { verifySecret } from "@/lib/hash";
+import { isMalformedValueError } from "@/lib/pgError";
 import {
   callerKey,
   clearRateLimit,
@@ -48,8 +49,10 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   // A dead query and a genuinely missing pool used to return the same 404, so
-  // a misconfigured deployment was indistinguishable from a bad link.
-  if (poolError) {
+  // a misconfigured deployment was indistinguishable from a bad link. A token
+  // that is not a uuid is neither: it is a bad link that never reached the
+  // table, and belongs with the 404 below.
+  if (poolError && !isMalformedValueError(poolError)) {
     return NextResponse.json(
       { error: "POOL_LOOKUP_FAILED", message: ERROR_MESSAGES.POOL_LOOKUP_FAILED },
       { status: 500 }

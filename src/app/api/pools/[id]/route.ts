@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { effectivePoolStatus } from "@/lib/poolStatus";
 import { getUserBySessionToken } from "@/lib/auth";
+import { isMalformedValueError } from "@/lib/pgError";
 
 function maskPhone(phone: string | null): string | null {
   if (!phone || phone.length < 4) return phone;
@@ -43,8 +44,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     .maybeSingle();
 
   // A dead query and a genuinely missing pool used to return the same 404, so
-  // a misconfigured deployment was indistinguishable from a bad link.
-  if (poolError) {
+  // a misconfigured deployment was indistinguishable from a bad link. An id
+  // that is not a uuid is neither: it never reached the table, and belongs
+  // with the 404 below.
+  if (poolError && !isMalformedValueError(poolError)) {
     return NextResponse.json({ error: "POOL_LOOKUP_FAILED" }, { status: 500 });
   }
   if (!pool) {
@@ -102,8 +105,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .maybeSingle();
 
   // A dead query and a genuinely missing pool used to return the same 404, so
-  // a misconfigured deployment was indistinguishable from a bad link.
-  if (poolError) {
+  // a misconfigured deployment was indistinguishable from a bad link. An id
+  // that is not a uuid is neither: it never reached the table, and belongs
+  // with the 404 below.
+  if (poolError && !isMalformedValueError(poolError)) {
     return NextResponse.json({ error: "POOL_LOOKUP_FAILED" }, { status: 500 });
   }
   if (!pool) {
