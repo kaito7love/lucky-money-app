@@ -22,12 +22,20 @@ const ChatRoomList = () => {
     const { user, loading: sessionLoading } = useSession();
     const [rooms, setRooms] = useState<ChatRoomSummary[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadFailed, setLoadFailed] = useState(false);
 
     useEffect(() => {
         if (!user) return;
         fetch("/api/chat/rooms")
-            .then((res) => readJson<{ rooms?: ChatRoomSummary[] }>(res))
-            .then((data) => setRooms(data.rooms ?? []))
+            .then(async (res) => {
+                const data = await readJson<{ rooms?: ChatRoomSummary[] }>(res);
+                if (!res.ok) {
+                    setLoadFailed(true);
+                    return;
+                }
+                setRooms(data.rooms ?? []);
+            })
+            .catch(() => setLoadFailed(true))
             .finally(() => setLoading(false));
     }, [user]);
 
@@ -73,6 +81,8 @@ const ChatRoomList = () => {
             <main className={styles.main}>
                 {loading ? (
                     <p className={styles.centerMessage}>Đang tải...</p>
+                ) : loadFailed ? (
+                    <p className={styles.centerMessage}>Không tải được danh sách phòng, vui lòng thử lại.</p>
                 ) : (
                     rooms.map((room) => (
                         <button

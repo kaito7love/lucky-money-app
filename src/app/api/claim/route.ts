@@ -21,6 +21,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   TOO_MANY_PIN_ATTEMPTS: "Bạn đã nhập sai mã PIN quá nhiều lần. Vui lòng đợi ít phút rồi thử lại.",
   NO_ENVELOPES_LEFT: "Đã hết bao lì xì, chúc bạn năm sau may mắn hơn!",
   POOL_LOOKUP_FAILED: "Không thể tải lì xì này, vui lòng thử lại.",
+  USER_LOOKUP_FAILED: "Không thể kiểm tra số điện thoại, vui lòng thử lại.",
+  USER_CREATE_FAILED: "Không thể tạo tài khoản, vui lòng thử lại.",
 };
 
 export async function POST(req: NextRequest) {
@@ -90,7 +92,12 @@ export async function POST(req: NextRequest) {
     if (err instanceof Error && err.message === "NAME_REQUIRED") {
       return NextResponse.json({ error: "MISSING_NAME", message: ERROR_MESSAGES.MISSING_NAME }, { status: 400 });
     }
-    throw err;
+    // Every other code out of findOrCreateUserByPhone is the database failing,
+    // not the guest's input. Rethrowing handed Next a bare 500 with no body,
+    // and the claim screen had nothing to show but a guess at the cause.
+    const code = err instanceof Error ? err.message : "CLAIM_FAILED";
+    const message = ERROR_MESSAGES[code] ?? "Máy chủ gặp lỗi, vui lòng thử lại.";
+    return NextResponse.json({ error: code, message }, { status: 500 });
   }
 
   const { data, error } = await supabaseAdmin.rpc("claim_envelope", {

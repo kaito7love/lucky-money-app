@@ -33,6 +33,8 @@ const ERROR_MESSAGES: Record<string, string> = {
     INVALID_VALUE: "Có giá trị bao lì xì không hợp lệ.",
     SUM_MISMATCH: "Tổng giá trị các bao không khớp với tổng số tiền.",
     INVALID_EXPIRY: "Thời gian hết hạn không hợp lệ.",
+    USER_LOOKUP_FAILED: "Không thể kiểm tra số điện thoại, vui lòng thử lại.",
+    USER_CREATE_FAILED: "Không thể tạo tài khoản cho số điện thoại này, vui lòng thử lại.",
     POOL_CREATE_FAILED: "Không thể tạo phòng, vui lòng thử lại.",
     ENVELOPES_CREATE_FAILED: "Không thể tạo bao lì xì, vui lòng thử lại.",
 };

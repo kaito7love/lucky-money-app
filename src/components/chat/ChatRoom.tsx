@@ -36,6 +36,11 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
     const router = useRouter();
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [loading, setLoading] = useState(true);
+    // Separate from an empty list on purpose: "nobody has written yet" and
+    // "we could not read the messages" are not the same news, and inviting
+    // someone to be the first is wrong when the room may be full of messages
+    // we simply failed to load.
+    const [loadFailed, setLoadFailed] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
 
     const room = getChatRoom(roomId);
@@ -58,10 +63,17 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
         if (!room) return;
         let cancelled = false;
         fetch(`/api/chat/messages?room_id=${roomId}`)
-            .then((res) => readJson<{ messages?: ChatMessage[] }>(res))
-            .then((data) => {
+            .then(async (res) => {
+                const data = await readJson<{ messages?: ChatMessage[] }>(res);
                 if (cancelled) return;
+                if (!res.ok) {
+                    setLoadFailed(true);
+                    return;
+                }
                 setMessages(data.messages ?? []);
+            })
+            .catch(() => {
+                if (!cancelled) setLoadFailed(true);
             })
             .finally(() => {
                 if (!cancelled) setLoading(false);
@@ -101,6 +113,8 @@ const ChatRoom = ({ roomId }: ChatRoomProps) => {
                 <div className={styles.chatContent}>
                     {loading ? (
                         <p className={styles.centerMessage}>Đang tải tin nhắn...</p>
+                    ) : loadFailed ? (
+                        <p className={styles.centerMessage}>Không tải được tin nhắn, vui lòng thử lại.</p>
                     ) : messages.length === 0 ? (
                         <p className={styles.centerMessage}>Chưa có tin nhắn nào, hãy là người đầu tiên!</p>
                     ) : (

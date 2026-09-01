@@ -109,9 +109,18 @@ export async function createPool(body: CreatePoolInput): Promise<CreatePoolResul
     return { id: pool.id, qr_token: pool.qr_token, host_token: pool.host_token };
 }
 
-const SERVER_ERROR_CODES = new Set(["POOL_CREATE_FAILED", "ENVELOPES_CREATE_FAILED"]);
+const SERVER_ERROR_CODES = new Set([
+    "POOL_CREATE_FAILED",
+    "ENVELOPES_CREATE_FAILED",
+    // createPool resolves the host through findOrCreateUserByPhone, so that
+    // function's infra failures surface here too. Missing from this set they
+    // were answered as 400s, telling a host their input was wrong when in fact
+    // the database was unreachable.
+    "USER_LOOKUP_FAILED",
+    "USER_CREATE_FAILED",
+]);
 
-/** HTTP status for an error code thrown by createPool(): 500 for the two
+/** HTTP status for an error code thrown by createPool(): 500 for the
  * infra-failure codes, 400 for every validation code. */
 export function poolErrorStatus(code: string): number {
     return SERVER_ERROR_CODES.has(code) ? 500 : 400;
