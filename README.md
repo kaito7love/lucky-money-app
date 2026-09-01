@@ -33,7 +33,7 @@ nhận một bao ngẫu nhiên. Host xem danh sách nhận trực tiếp (realti
    chuyện trực tiếp với Supabase nữa.)
 2. Copy `.env.example` thành `.env.local` và điền các giá trị trên.
 3. Chạy lần lượt các migration trong `supabase/migrations/` (theo đúng thứ
-   tự `0001` → `0007`) trong SQL Editor của Supabase — tạo bảng `pools`,
+   tự `0001` → `0008`) trong SQL Editor của Supabase — tạo bảng `pools`,
    `envelopes`, `wallet_transactions`, `users`, `sessions`, `chat_messages`,
    `rate_limit_attempts`, và hàm `claim_envelope()`.
 4. Cài dependencies và chạy dev server:
@@ -80,8 +80,8 @@ hosting serverless (không có ổ đĩa bền vững) mà không mất dữ li�
 ## Deploy (free)
 
 1. Push code lên GitHub (repo này đã có sẵn).
-2. Tạo project Supabase Cloud (free tier) riêng cho production, chạy đủ cả 7
-   migration (`0001` → `0007`) như bước "Cài đặt" ở trên. Thiếu migration nào
+2. Tạo project Supabase Cloud (free tier) riêng cho production, chạy đủ cả 8
+   migration (`0001` → `0008`) như bước "Cài đặt" ở trên. Thiếu migration nào
    thì endpoint tương ứng sẽ lỗi 500 — ví dụ thiếu `0006` là đăng ký/đăng
    nhập hỏng vì code ghi `sessions.expires_at`.
 3. Import repo vào [Vercel](https://vercel.com) (đăng nhập bằng GitHub cho

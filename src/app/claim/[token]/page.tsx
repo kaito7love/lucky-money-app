@@ -37,6 +37,10 @@ interface ClaimResponse {
 // Worth telling apart: a missing pool is final, a failed lookup is worth
 // retrying. Anything else falls back by status, which keeps a bare 500 from
 // being described as a network problem.
+// A pool that ran out, expired, or was closed is over for good: the form
+// should give way rather than invite an attempt that cannot succeed.
+const TERMINAL_CLAIM_ERRORS = new Set(["NO_ENVELOPES_LEFT", "POOL_EXPIRED", "POOL_CLOSED"]);
+
 const POOL_ERROR_MESSAGES: Record<string, string> = {
   POOL_NOT_FOUND: "Không tìm thấy lì xì này.",
   POOL_LOOKUP_FAILED: "Không thể tải lì xì này, vui lòng thử lại.",
@@ -124,7 +128,7 @@ export default function ClaimPage() {
       if (!res.ok) {
         setError(apiErrorMessage(res, data));
         setSubmitting(false);
-        if (data.error === "NO_ENVELOPES_LEFT" || data.error === "POOL_CLOSED") {
+        if (data.error && TERMINAL_CLAIM_ERRORS.has(data.error)) {
           setStage("unavailable");
         }
         return;

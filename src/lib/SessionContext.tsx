@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { useLocalStorageValue } from "@/lib/useLocalStorageValue";
+import { readJson } from "@/lib/apiError";
 
 export interface SessionUser {
     id: string;
@@ -43,18 +44,30 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         if (token === undefined) return;
         let cancelled = false;
 
-        async function resolveUser() {
+        async function resolveUser(): Promise<SessionUser | null> {
             if (!token) return null;
             const res = await fetch(`/api/auth/me?session_token=${token}`);
-            return res.ok ? (await res.json()).user : null;
+            if (!res.ok) return null;
+            const data = await readJson<{ user?: SessionUser }>(res);
+            return data.user ?? null;
         }
 
-        resolveUser().then((resolved) => {
-            if (!cancelled) {
-                setUser(resolved);
-                setLoading(false);
-            }
-        });
+        resolveUser()
+            .then((resolved) => {
+                if (!cancelled) {
+                    setUser(resolved);
+                    setLoading(false);
+                }
+            })
+            .catch(() => {
+                // A request that never got an answer is not proof of being
+                // signed out, so `user` is left alone rather than cleared —
+                // a dropped connection should not log someone out. Clearing
+                // `loading` is the part that must happen either way: it lived
+                // only in the success path, so an unhandled rejection here
+                // left every page gated on the session waiting for good.
+                if (!cancelled) setLoading(false);
+            });
 
         return () => {
             cancelled = true;

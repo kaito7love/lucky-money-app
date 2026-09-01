@@ -18,6 +18,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   INVALID_PIN: "Mã PIN không đúng.",
   POOL_NOT_FOUND: "Không tìm thấy lì xì này.",
   POOL_CLOSED: "Lì xì này đã đóng.",
+  POOL_EXPIRED: "Lì xì này đã hết hạn.",
   ALREADY_CLAIMED: "Bạn đã nhận lì xì này rồi.",
   TOO_MANY_PIN_ATTEMPTS: "Bạn đã nhập sai mã PIN quá nhiều lần. Vui lòng đợi ít phút rồi thử lại.",
   NO_ENVELOPES_LEFT: "Đã hết bao lì xì, chúc bạn năm sau may mắn hơn!",
@@ -25,6 +26,9 @@ const ERROR_MESSAGES: Record<string, string> = {
   USER_LOOKUP_FAILED: "Không thể kiểm tra số điện thoại, vui lòng thử lại.",
   USER_CREATE_FAILED: "Không thể tạo tài khoản, vui lòng thử lại.",
 };
+
+/** Every code claim_envelope() can raise, in the order they are looked for. */
+const RAISED_CODES = ["ALREADY_CLAIMED", "NO_ENVELOPES_LEFT", "POOL_EXPIRED", "POOL_CLOSED"];
 
 export async function POST(req: NextRequest) {
   let body: { qr_token?: string; name?: string; phone?: string; pin?: string };
@@ -110,13 +114,9 @@ export async function POST(req: NextRequest) {
   });
 
   if (error) {
-    const code = error.message.includes("ALREADY_CLAIMED")
-      ? "ALREADY_CLAIMED"
-      : error.message.includes("NO_ENVELOPES_LEFT")
-        ? "NO_ENVELOPES_LEFT"
-        : error.message.includes("POOL_CLOSED")
-          ? "POOL_CLOSED"
-          : "CLAIM_FAILED";
+    // claim_envelope() reports its outcome by raising, so the code arrives
+    // buried in a Postgres error message rather than as a field of its own.
+    const code = RAISED_CODES.find((raised) => error.message.includes(raised)) ?? "CLAIM_FAILED";
     const message = ERROR_MESSAGES[code] ?? "Có lỗi xảy ra, vui lòng thử lại.";
     const status = code === "CLAIM_FAILED" ? 500 : 409;
     return NextResponse.json({ error: code, message }, { status });
