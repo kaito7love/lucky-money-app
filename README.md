@@ -82,6 +82,9 @@ hoặc database thì nó **báo lỗi kèm hướng dẫn**, không im lặng b�
 file dùng chung một database nên chạy tuần tự (`--test-concurrency=1`).
 Hiện phủ ba thứ chỉ kiểm được khi chạy thật:
 
+- **`POST /api/pools`** — nơi tiền được sinh ra. Ràng buộc quan trọng nhất:
+  các bao ghi xuống database phải cộng lại đúng bằng tổng host nhập, vì về
+  sau không chỗ nào tính lại nữa.
 - **`claim_envelope()`** — bắn hàng chục lượt nhận song song vào cùng một
   phòng để chứng minh không bao nào bị phát hai lần. Test tuần tự sẽ pass
   ngay cả với một hàm không khoá gì cả, nên đây là cách duy nhất bắt được
@@ -98,8 +101,8 @@ npm run test:integration
 TEST_BASE_URL=https://<app>.vercel.app npm run test:integration
 ```
 
-Chưa có test cho các API route khác (`/api/pools`, `/api/claim`) và React
-component.
+Chưa có test cho `/api/claim` (lớp route bọc ngoài `claim_envelope()`:
+kiểm PIN, giới hạn số lần thử), các route chat/auth, và React component.
 
 ## Cấu trúc
 
@@ -241,8 +244,10 @@ Cách kiểm tra sau khi deploy:
   được phòng chat mới từ giao diện.
 - **Mất `host_token` mà phòng không gắn tài khoản** thì không khôi phục được
   quyền quản lý.
-- **Chưa có test** cho các API route (`/api/pools`, `/api/claim`) và React
-  component. Phần tính tiền và `claim_envelope()` thì đã có.
+- **Tổng tiền một phòng tối đa 2.147.483.647đ**, giới hạn của kiểu
+  `integer` trong Postgres.
+- **Chưa có test** cho `/api/claim`, các route chat/auth, và React
+  component. Phần tính tiền, tạo phòng và `claim_envelope()` thì đã có.
 
 ## Chưa làm (để sau)
 
