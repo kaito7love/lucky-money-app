@@ -69,10 +69,28 @@ npm run typecheck  # tsc --noEmit
 npm run lint       # eslint
 ```
 
-Bộ test phủ phần tính tiền (`src/lib/envelopes.ts`,
-`src/lib/fillFromDenominations.ts`) và các helper trên đường xác thực. Nó
-dùng `node:test` có sẵn nên không thêm dependency nào. Chưa có test cho API
-route, hàm Postgres, và React component.
+Cả hai bộ test dùng `node:test` có sẵn trong Node 22, không thêm
+dependency nào.
+
+**Unit test** (`npm test`) — chạy được mọi lúc, không cần server hay
+database. Phủ phần tính tiền (`src/lib/envelopes.ts`,
+`src/lib/fillFromDenominations.ts`) và các helper trên đường xác thực.
+
+**Integration test** (`npm run test:integration`) — cần dev server **và**
+Supabase đang chạy, vì nó gọi API thật và đọc database thật. Hiện phủ cron
+keep-alive: đây là cách duy nhất chứng minh endpoint thật sự truy vấn
+Postgres, thứ mà mock không bao giờ kiểm được. Thiếu server hoặc database
+thì nó **báo lỗi kèm hướng dẫn**, không im lặng bỏ qua.
+
+```bash
+npm run test:integration
+
+# hoặc trỏ vào deployment (env file phải là credentials của chính nó)
+TEST_BASE_URL=https://<app>.vercel.app npm run test:integration
+```
+
+Chưa có test cho các API route khác, hàm Postgres `claim_envelope()`, và
+React component.
 
 ## Cấu trúc
 

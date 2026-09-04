@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"src/**/*.test.ts\""
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"src/**/*.test.ts\"",
+    "test:integration": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --env-file=.env.local --test \"tests/integration/**/*.test.ts\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
