@@ -10,6 +10,10 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
+    // Tests import the module under test by its real path ("./phone.ts"),
+    // because `node --test` runs them as ESM where extensions are required.
+    // Safe here: the project never emits, so nothing has to rewrite them.
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
