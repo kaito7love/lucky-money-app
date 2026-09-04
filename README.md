@@ -89,6 +89,9 @@ Hiện phủ ba thứ chỉ kiểm được khi chạy thật:
   phòng để chứng minh không bao nào bị phát hai lần. Test tuần tự sẽ pass
   ngay cả với một hàm không khoá gì cả, nên đây là cách duy nhất bắt được
   lỗi race.
+- **`POST /api/claim`** — cổng PIN và giới hạn số lần thử. PIN chỉ 4–6 chữ
+  số nên phải chặn được: đoán sai lần thứ 6 bị khoá, nhưng không khoá lây
+  sang khách khác của cùng phòng, cũng không theo người đó sang phòng khác.
 - **Ví** — một người nhận ở hai phòng cùng lúc thì số dư vẫn phải cộng đủ.
 - **Cron keep-alive** — đối chiếu số phòng trong response với số đếm thật
   từ database, để chắc chắn endpoint có truy vấn Postgres chứ không trả
@@ -101,8 +104,7 @@ npm run test:integration
 TEST_BASE_URL=https://<app>.vercel.app npm run test:integration
 ```
 
-Chưa có test cho `/api/claim` (lớp route bọc ngoài `claim_envelope()`:
-kiểm PIN, giới hạn số lần thử), các route chat/auth, và React component.
+Chưa có test cho các route chat/auth và React component.
 
 ## Cấu trúc
 
@@ -246,8 +248,8 @@ Cách kiểm tra sau khi deploy:
   quyền quản lý.
 - **Tổng tiền một phòng tối đa 2.147.483.647đ**, giới hạn của kiểu
   `integer` trong Postgres.
-- **Chưa có test** cho `/api/claim`, các route chat/auth, và React
-  component. Phần tính tiền, tạo phòng và `claim_envelope()` thì đã có.
+- **Chưa có test** cho các route chat/auth và React component. Toàn bộ
+  đường đi của tiền (tạo phòng → phát bao → ví) thì đã có.
 
 ## Chưa làm (để sau)
 
