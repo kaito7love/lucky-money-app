@@ -7,6 +7,12 @@ import type { CreatePoolInput } from "@/lib/types";
 
 const MAX_ENVELOPES = 500;
 const PIN_RE = /^\d{4,6}$/;
+/** pools.total_amount and envelopes.value are Postgres `integer`. Without
+ * this check an amount above the type's ceiling reached the insert and came
+ * back as POOL_CREATE_FAILED — a 500 telling the host to try again, which
+ * could never succeed. Typing one zero too many is the ordinary way to get
+ * here. */
+const MAX_TOTAL_AMOUNT = 2_147_483_647;
 
 export interface CreatePoolResult {
     id: string;
@@ -31,7 +37,9 @@ export async function createPool(body: CreatePoolInput): Promise<CreatePoolResul
 
     if (!name) throw new Error("MISSING_NAME");
     if (!hostPhone || !isValidPhone(hostPhone)) throw new Error("INVALID_HOST_PHONE");
-    if (!Number.isInteger(totalAmount) || totalAmount <= 0) throw new Error("INVALID_TOTAL_AMOUNT");
+    if (!Number.isInteger(totalAmount) || totalAmount <= 0 || totalAmount > MAX_TOTAL_AMOUNT) {
+        throw new Error("INVALID_TOTAL_AMOUNT");
+    }
     if (!Number.isInteger(envelopeCount) || envelopeCount <= 0 || envelopeCount > MAX_ENVELOPES) {
         throw new Error("INVALID_ENVELOPE_COUNT");
     }
@@ -74,7 +82,12 @@ export async function createPool(body: CreatePoolInput): Promise<CreatePoolResul
     if (body.expires_in_hours) {
         const hours = Number(body.expires_in_hours);
         if (!Number.isFinite(hours) || hours <= 0) throw new Error("INVALID_EXPIRY");
-        expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+        // A large enough number of hours lands past the range Date can hold,
+        // and toISOString() then throws a RangeError whose message escaped as
+        // the API's error code ("Invalid time value").
+        const deadline = new Date(Date.now() + hours * 60 * 60 * 1000);
+        if (Number.isNaN(deadline.getTime())) throw new Error("INVALID_EXPIRY");
+        expiresAt = deadline.toISOString();
     }
 
     const { data: pool, error: poolError } = await supabaseAdmin

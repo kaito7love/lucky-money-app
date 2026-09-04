@@ -24,7 +24,7 @@ const ERROR_MESSAGES: Record<string, string> = {
     MISSING_HOST_NAME: "Vui lòng nhập tên của bạn (số điện thoại này chưa có tài khoản).",
     INVALID_HOST_PHONE: "Số điện thoại không hợp lệ.",
     INVALID_PIN: "Mã PIN phải gồm 4-6 chữ số.",
-    INVALID_TOTAL_AMOUNT: "Tổng số tiền không hợp lệ.",
+    INVALID_TOTAL_AMOUNT: "Tổng số tiền không hợp lệ (tối đa 2.147.483.647đ).",
     INVALID_ENVELOPE_COUNT: "Số bao lì xì không hợp lệ (tối đa 500).",
     INVALID_MODE: "Cách chia bao lì xì không hợp lệ.",
     INVALID_INPUT: "Giá trị min/max không hợp lệ.",
