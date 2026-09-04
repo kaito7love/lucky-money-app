@@ -116,6 +116,11 @@ test("chấp nhận secret đúng và báo ok", async () => {
 
 // The point of the whole endpoint: Supabase counts database activity, not
 // HTTP traffic, so the ping has to reach Postgres to be worth anything.
+//
+// Compares against a live count, which means no other file may be creating or
+// deleting pools while it runs — hence --test-concurrency=1 on the
+// test:integration script. These files share one database; running them in
+// parallel made this the only flaky test in the suite.
 test("ping thật sự truy vấn Postgres, không trả JSON tĩnh", async () => {
     const { count } = await db.from("pools").select("id", { head: true, count: "exact" });
     const res = await call({ authorization: `Bearer ${CRON_SECRET}` });
