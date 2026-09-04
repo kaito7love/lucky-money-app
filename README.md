@@ -165,6 +165,38 @@ tới 59 phút so với giờ khai báo — vẫn đủ, vì ngưỡng của Sup
 Vercel thì không "ngủ", chỉ có cold start vài trăm ms sau một thời gian
 vắng. Điều này đáng lưu ý vì app dùng theo mùa: rộ dịp Tết, vắng quanh năm.
 
+### Kiểm tra cron có thật sự chạy không
+
+> ⚠️ **Quên `CRON_SECRET` trên Vercel là hỏng âm thầm.** Vercel chỉ gắn header
+> `Authorization: Bearer …` khi biến đó tồn tại. Thiếu nó, cron vẫn chạy
+> đúng giờ mỗi ngày nhưng bị endpoint trả 401, không hề chạm vào database —
+> và Supabase vẫn cứ pause sau 7 ngày. Trên giao diện không có dấu hiệu gì.
+
+Cách kiểm tra sau khi deploy:
+
+1. Vercel → project → tab **Cron Jobs**, xem lần chạy gần nhất trả **200**.
+   Nếu là **401** thì thiếu `CRON_SECRET`; nếu là **503** thì database đang
+   chết hoặc đã bị pause.
+2. Hoặc gọi tay bằng chính secret đã đặt:
+
+   ```bash
+   curl -i -H "Authorization: Bearer $CRON_SECRET" \
+     https://<app>.vercel.app/api/cron/keepalive
+   ```
+
+   Kết quả đúng trông như thế này — `ping` phải kèm số phòng thật, đó là
+   bằng chứng nó đã truy vấn Postgres chứ không trả JSON tĩnh:
+
+   ```json
+   { "ok": true, "ranAt": "...", "results": {
+       "ping": "ok (25 pools)",
+       "expiredSessions": "swept",
+       "staleRateLimits": "swept" } }
+   ```
+
+3. Supabase → project → **Reports**, thấy có hoạt động database mỗi ngày là
+   yên tâm không bị pause.
+
 ## Hạn chế đã biết
 
 - **Danh sách phòng chat là cố định** trong `src/lib/chatRooms.ts`, chưa tạo
