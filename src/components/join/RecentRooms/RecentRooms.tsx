@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./RecentRooms.module.css";
+import { readJson } from "@/lib/apiError";
 
 interface ChatRoomSummary {
     id: string;
@@ -15,7 +16,7 @@ const RecentRooms = () => {
 
     useEffect(() => {
         fetch("/api/chat/rooms")
-            .then((res) => res.json())
+            .then((res) => readJson<{ rooms?: ChatRoomSummary[] }>(res))
             .then((data) => setRooms(data.rooms ?? []));
     }, []);
 

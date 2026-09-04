@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { effectivePoolStatus } from "@/lib/poolStatus";
 import { getUserBySessionToken } from "@/lib/auth";
+import { isMalformedValueError } from "@/lib/pgError";
 
 function maskPhone(phone: string | null): string | null {
   if (!phone || phone.length < 4) return phone;
@@ -40,9 +41,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     .from("pools")
     .select("id, name, host_name, total_amount, envelope_count, mode, min_value, max_value, qr_token, status, expires_at, created_at, host_token, host_phone")
     .eq("id", id)
-    .single();
+    .maybeSingle();
 
-  if (poolError || !pool) {
+  // A dead query and a genuinely missing pool used to return the same 404, so
+  // a misconfigured deployment was indistinguishable from a bad link. An id
+  // that is not a uuid is neither: it never reached the table, and belongs
+  // with the 404 below.
+  if (poolError && !isMalformedValueError(poolError)) {
+    return NextResponse.json({ error: "POOL_LOOKUP_FAILED" }, { status: 500 });
+  }
+  if (!pool) {
     return NextResponse.json({ error: "POOL_NOT_FOUND" }, { status: 404 });
   }
   if (!(await isAuthorizedHost(pool, hostToken, sessionToken))) {
@@ -94,9 +102,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .from("pools")
     .select("id, host_token, host_phone, status")
     .eq("id", id)
-    .single();
+    .maybeSingle();
 
-  if (poolError || !pool) {
+  // A dead query and a genuinely missing pool used to return the same 404, so
+  // a misconfigured deployment was indistinguishable from a bad link. An id
+  // that is not a uuid is neither: it never reached the table, and belongs
+  // with the 404 below.
+  if (poolError && !isMalformedValueError(poolError)) {
+    return NextResponse.json({ error: "POOL_LOOKUP_FAILED" }, { status: 500 });
+  }
+  if (!pool) {
     return NextResponse.json({ error: "POOL_NOT_FOUND" }, { status: 404 });
   }
   if (!(await isAuthorizedHost(pool, body.host_token ?? null, body.session_token ?? null))) {

@@ -76,19 +76,28 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: code }, { status: poolErrorStatus(code) });
     }
 
-    const message = await insertMessage({
-        roomId,
-        senderId: user.id,
-        senderName: user.name,
-        text: `🧧 Đã gửi lì xì: ${body.name}`,
-        lixi: {
-            poolId: pool.id,
-            qrToken: pool.qr_token,
-            name: body.name ?? "",
-            totalAmount,
-            envelopeCount,
-        },
-    });
+    // The pool already exists by this point, so a failure here is not a failed
+    // send but a lì xì with no message announcing it. Saying so beats a bare
+    // 500 that the composer can only call a lost connection.
+    let message;
+    try {
+        message = await insertMessage({
+            roomId,
+            senderId: user.id,
+            senderName: user.name,
+            text: `🧧 Đã gửi lì xì: ${body.name}`,
+            lixi: {
+                poolId: pool.id,
+                qrToken: pool.qr_token,
+                name: body.name ?? "",
+                totalAmount,
+                envelopeCount,
+            },
+        });
+    } catch (err) {
+        const code = err instanceof Error ? err.message : "MESSAGE_CREATE_FAILED";
+        return NextResponse.json({ error: code }, { status: 500 });
+    }
 
     return NextResponse.json({ message, host_token: pool.host_token, pool_id: pool.id });
 }

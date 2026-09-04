@@ -28,13 +28,14 @@ nhận một bao ngẫu nhiên. Host xem danh sách nhận trực tiếp (realti
 
 ## Cài đặt
 
-1. Tạo project trên [Supabase](https://supabase.com), lấy `Project URL`,
-   `anon key`, `service_role key`.
+1. Tạo project trên [Supabase](https://supabase.com), lấy `Project URL` và
+   `service_role key`. (`anon key` không còn dùng — trình duyệt không nói
+   chuyện trực tiếp với Supabase nữa.)
 2. Copy `.env.example` thành `.env.local` và điền các giá trị trên.
 3. Chạy lần lượt các migration trong `supabase/migrations/` (theo đúng thứ
-   tự `0001` → `0005`) trong SQL Editor của Supabase — tạo bảng `pools`,
+   tự `0001` → `0008`) trong SQL Editor của Supabase — tạo bảng `pools`,
    `envelopes`, `wallet_transactions`, `users`, `sessions`, `chat_messages`,
-   hàm `claim_envelope()`, và bật realtime cho bảng `envelopes`.
+   `rate_limit_attempts`, và hàm `claim_envelope()`.
 4. Cài dependencies và chạy dev server:
 
    ```bash
@@ -44,6 +45,34 @@ nhận một bao ngẫu nhiên. Host xem danh sách nhận trực tiếp (realti
 
 5. Mở `http://localhost:3000`.
 
+## Triển khai
+
+**Chạy migration trước, deploy sau.** Code đọc/ghi `sessions.expires_at`; nếu
+deploy trước khi chạy `0006`, mọi người đang đăng nhập sẽ bị văng ra và không
+đăng nhập lại được cho tới khi migration chạy xong.
+
+Đặt thêm biến `CRON_SECRET` trên project Vercel (chuỗi ngẫu nhiên từ 16 ký
+tự). Vercel gửi nó dưới dạng `Authorization: Bearer <giá trị>` khi chạy cron;
+thiếu biến này thì `/api/cron/keepalive` từ chối mọi request, kể cả của
+Vercel.
+
+### Vì sao cần cron
+
+Supabase gói Free **tạm dừng** project khi hoạt động database thấp trong 7
+ngày, và project bị dừng thì không truy cập được cho tới khi tự vào dashboard
+bấm khôi phục. `vercel.json` khai báo một cron chạy mỗi ngày gọi
+`/api/cron/keepalive`, thực hiện vài truy vấn thật để giữ project thức, đồng
+thời dọn session hết hạn và bản ghi rate-limit cũ.
+
+Cron chỉ **phòng ngừa**, không đánh thức được project đã bị dừng — việc đó
+phải làm tay trên dashboard. Nếu database chết hoặc bị dừng, endpoint trả
+503 kèm lý do để thấy ngay trong log cron của Vercel, thay vì báo thành công
+giả mỗi ngày.
+
+Lưu ý gói Hobby của Vercel chỉ cho cron chạy **một lần mỗi ngày** và có thể
+lệch tới 59 phút so với giờ khai báo — đủ dùng, vì ngưỡng của Supabase là 7
+ngày.
+
 Toàn bộ state của app (tài khoản, session, tin nhắn chat, pool, ví) nằm
 trong Postgres — không còn file JSON cục bộ nào — nên app deploy được lên
 hosting serverless (không có ổ đĩa bền vững) mà không mất dữ liệu.
@@ -51,8 +80,10 @@ hosting serverless (không có ổ đĩa bền vững) mà không mất dữ li�
 ## Deploy (free)
 
 1. Push code lên GitHub (repo này đã có sẵn).
-2. Tạo project Supabase Cloud (free tier) riêng cho production, chạy đủ 5
-   migration như bước "Cài đặt" ở trên.
+2. Tạo project Supabase Cloud (free tier) riêng cho production, chạy đủ cả 8
+   migration (`0001` → `0008`) như bước "Cài đặt" ở trên. Thiếu migration nào
+   thì endpoint tương ứng sẽ lỗi 500 — ví dụ thiếu `0006` là đăng ký/đăng
+   nhập hỏng vì code ghi `sessions.expires_at`.
 3. Import repo vào [Vercel](https://vercel.com) (đăng nhập bằng GitHub cho
    nhanh), điền 3 biến môi trường trong Project Settings → Environment
    Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,

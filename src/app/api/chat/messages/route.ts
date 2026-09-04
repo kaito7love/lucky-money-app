@@ -12,8 +12,16 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "ROOM_NOT_FOUND" }, { status: 404 });
     }
 
-    const messages = await getMessagesByRoom(roomId);
-    return NextResponse.json({ messages });
+    try {
+        const messages = await getMessagesByRoom(roomId);
+        return NextResponse.json({ messages });
+    } catch (err) {
+        const code = err instanceof Error ? err.message : "MESSAGES_FETCH_FAILED";
+        return NextResponse.json(
+            { error: code, message: "Không thể tải tin nhắn, vui lòng thử lại." },
+            { status: 500 }
+        );
+    }
 }
 
 export async function POST(req: NextRequest) {
@@ -45,6 +53,14 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "EMPTY_TEXT" }, { status: 400 });
     }
 
-    const message = await insertMessage({ roomId, senderId: user.id, senderName: user.name, text });
-    return NextResponse.json({ message });
+    try {
+        const message = await insertMessage({ roomId, senderId: user.id, senderName: user.name, text });
+        return NextResponse.json({ message });
+    } catch (err) {
+        const code = err instanceof Error ? err.message : "MESSAGE_CREATE_FAILED";
+        return NextResponse.json(
+            { error: code, message: "Không thể gửi tin nhắn, vui lòng thử lại." },
+            { status: 500 }
+        );
+    }
 }

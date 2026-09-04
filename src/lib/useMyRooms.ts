@@ -77,6 +77,9 @@ async function fetchLocalRooms(): Promise<(MyRoom | null)[]> {
  */
 export function useMyRooms() {
     const { user, token: sessionToken, loading: sessionLoading } = useSession();
+    // Depend on the id, not the object: a re-rendered SessionProvider hands back
+    // a new `user` object for the same person, which would refetch every room.
+    const userId = user?.id;
     const [rooms, setRooms] = useState<MyRoom[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -94,7 +97,7 @@ export function useMyRooms() {
             // the stored host_tokens beats showing an empty page to someone who
             // still owns rooms.
             const results =
-                user && sessionToken
+                userId && sessionToken
                     ? await fetchAccountRooms(sessionToken)
                     : await fetchLocalRooms();
 
@@ -109,7 +112,7 @@ export function useMyRooms() {
         return () => {
             cancelled = true;
         };
-    }, [sessionToken, user?.id, sessionLoading]);
+    }, [sessionToken, userId, sessionLoading]);
 
     return { rooms, loading };
 }

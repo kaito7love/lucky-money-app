@@ -4,6 +4,7 @@ import { useState } from "react";
 import { formatVnd } from "@/lib/formatVnd";
 import { useBackOrHome } from "@/lib/useBackOrHome";
 import { normalizePhone } from "@/lib/phone";
+import { apiErrorMessage, NETWORK_ERROR_MESSAGE, readJson, type ApiErrorBody } from "@/lib/apiError";
 import MobileNav from "@/components/layout/MobileNav";
 
 interface Transaction {
@@ -13,6 +14,11 @@ interface Transaction {
   pool_id: string | null;
   balance_after: number;
   created_at: string;
+}
+
+interface WalletResponse extends ApiErrorBody {
+  balance: number;
+  transactions: Transaction[];
 }
 
 export default function WalletPage() {
@@ -29,16 +35,16 @@ export default function WalletPage() {
     setLoading(true);
     try {
       const res = await fetch(`/api/wallet/${encodeURIComponent(normalizePhone(phone))}`);
-      const data = await res.json();
+      const data = await readJson<WalletResponse>(res);
       if (!res.ok) {
-        setError("Có lỗi xảy ra, vui lòng thử lại.");
+        setError(apiErrorMessage(res, data));
         setLoading(false);
         return;
       }
       setBalance(data.balance);
       setTransactions(data.transactions);
     } catch {
-      setError("Không thể kết nối máy chủ.");
+      setError(NETWORK_ERROR_MESSAGE);
     } finally {
       setLoading(false);
     }

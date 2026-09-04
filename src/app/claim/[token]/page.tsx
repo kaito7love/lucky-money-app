@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLocalStorageValue } from "@/lib/useLocalStorageValue";
 import { useRouteParams } from "@/lib/useRouteParams";
+import { apiErrorMessage, NETWORK_ERROR_MESSAGE, readJson, type ApiErrorBody } from "@/lib/apiError";
 import ClaimForm from "@/components/claim/ClaimForm/ClaimForm";
 import EnvelopeRevealCard from "@/components/claim/EnvelopeRevealCard/EnvelopeRevealCard";
 import styles from "./page.module.css";
@@ -25,9 +27,29 @@ interface Receipt {
   claimed_at: string;
 }
 
+interface ClaimResponse {
+  value: number;
+  name?: string;
+  error?: string;
+  message?: string;
+}
+
+// Worth telling apart: a missing pool is final, a failed lookup is worth
+// retrying. Anything else falls back by status, which keeps a bare 500 from
+// being described as a network problem.
+// A pool that ran out, expired, or was closed is over for good: the form
+// should give way rather than invite an attempt that cannot succeed.
+const TERMINAL_CLAIM_ERRORS = new Set(["NO_ENVELOPES_LEFT", "POOL_EXPIRED", "POOL_CLOSED"]);
+
+const POOL_ERROR_MESSAGES: Record<string, string> = {
+  POOL_NOT_FOUND: "Không tìm thấy lì xì này.",
+  POOL_LOOKUP_FAILED: "Không thể tải lì xì này, vui lòng thử lại.",
+};
+
 type Stage = "loading" | "form" | "closed" | "opened" | "unavailable";
 
 export default function ClaimPage() {
+  const router = useRouter();
   const params = useRouteParams<{ token: string }>();
   const storedReceiptRaw = useLocalStorageValue(`lucky_claim_${params.token}`);
   const storedReceipt = useMemo<Receipt | null>(() => {
@@ -58,13 +80,13 @@ export default function ClaimPage() {
 
     fetch(`/api/pools/by-qr/${params.token}`)
       .then(async (res) => {
-        const json = await res.json();
+        const json = await readJson<PublicPool & ApiErrorBody>(res);
         if (!res.ok) {
           if (storedReceipt) {
             setStage("opened");
             return;
           }
-          setError(json.error === "POOL_NOT_FOUND" ? "Không tìm thấy lì xì này." : "Có lỗi xảy ra.");
+          setError(apiErrorMessage(res, json, POOL_ERROR_MESSAGES));
           setStage("unavailable");
           return;
         }
@@ -82,7 +104,7 @@ export default function ClaimPage() {
           setStage("opened");
           return;
         }
-        setError("Không thể kết nối máy chủ.");
+        setError(NETWORK_ERROR_MESSAGE);
         setStage("unavailable");
       });
   }, [params.token, storedReceiptRaw, storedReceipt]);
@@ -102,11 +124,11 @@ export default function ClaimPage() {
           ...(pool?.is_private ? { pin } : {}),
         }),
       });
-      const data = await res.json();
+      const data = await readJson<ClaimResponse>(res);
       if (!res.ok) {
-        setError(data.message ?? "Có lỗi xảy ra.");
+        setError(apiErrorMessage(res, data));
         setSubmitting(false);
-        if (data.error === "NO_ENVELOPES_LEFT" || data.error === "POOL_CLOSED") {
+        if (data.error && TERMINAL_CLAIM_ERRORS.has(data.error)) {
           setStage("unavailable");
         }
         return;
@@ -121,7 +143,7 @@ export default function ClaimPage() {
       setFreshReceipt(newReceipt);
       setStage("closed");
     } catch {
-      setError("Không thể kết nối máy chủ.");
+      setError(NETWORK_ERROR_MESSAGE);
       setSubmitting(false);
     }
   }
@@ -130,7 +152,7 @@ export default function ClaimPage() {
     <div className={styles.page}>
       <button
         className={styles.backButton}
-        onClick={() => window.history.back()}
+        onClick={() => router.push("/")}
         aria-label="Quay lại"
       >
         <span className="material-symbols-outlined">arrow_back</span>

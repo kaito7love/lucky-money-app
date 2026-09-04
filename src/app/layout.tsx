@@ -23,6 +23,11 @@ export default function RootLayout({
   return (
     <html lang="vi" className={beVietnamPro.variable}>
       <head>
+        {/* no-page-custom-font targets the Pages Router, where a font linked
+            outside _document.js loads for one page only. This is the App
+            Router's root layout, which wraps every page, so the rule's premise
+            doesn't hold here. */}
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"

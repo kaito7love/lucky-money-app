@@ -6,9 +6,18 @@ import styles from "./CreateRoom.module.css";
 import CreateHeader from "./Header/CreateHeader";
 import CreateHero from "./Hero/CreateHero";
 import PrivacySettings from "./Privacy/PrivacySettings";
+import AmountInput from "./AmountInput/AmountInput";
+import DenominationComposer, { type DenominationRow } from "./DenominationComposer/DenominationComposer";
 import { useSession } from "@/lib/SessionContext";
+import { apiErrorMessage, NETWORK_ERROR_MESSAGE, readJson } from "@/lib/apiError";
 
 type Mode = "random" | "fixed";
+
+interface CreatePoolResponse {
+    id: string;
+    host_token: string;
+    error?: string;
+}
 
 const ERROR_MESSAGES: Record<string, string> = {
     MISSING_NAME: "Vui lòng nhập tên phòng.",
@@ -24,6 +33,8 @@ const ERROR_MESSAGES: Record<string, string> = {
     INVALID_VALUE: "Có giá trị bao lì xì không hợp lệ.",
     SUM_MISMATCH: "Tổng giá trị các bao không khớp với tổng số tiền.",
     INVALID_EXPIRY: "Thời gian hết hạn không hợp lệ.",
+    USER_LOOKUP_FAILED: "Không thể kiểm tra số điện thoại, vui lòng thử lại.",
+    USER_CREATE_FAILED: "Không thể tạo tài khoản cho số điện thoại này, vui lòng thử lại.",
     POOL_CREATE_FAILED: "Không thể tạo phòng, vui lòng thử lại.",
     ENVELOPES_CREATE_FAILED: "Không thể tạo bao lì xì, vui lòng thử lại.",
 };
@@ -40,7 +51,7 @@ const CreateRoom = () => {
     const [mode, setMode] = useState<Mode>("random");
     const [minValue, setMinValue] = useState("");
     const [maxValue, setMaxValue] = useState("");
-    const [fixedValuesText, setFixedValuesText] = useState("");
+    const [denominationRows, setDenominationRows] = useState<DenominationRow[]>([]);
     const [expiresInHours, setExpiresInHours] = useState("");
     const [isPrivate, setIsPrivate] = useState(false);
     const [pin, setPin] = useState("");
@@ -53,6 +64,13 @@ const CreateRoom = () => {
         setHostPhone(user.phone);
         setHostName(user.name);
     }
+
+    const fixedModeReady =
+        mode !== "fixed" ||
+        (Number(totalAmount) > 0 &&
+            Number(envelopeCount) > 0 &&
+            denominationRows.reduce((sum, r) => sum + r.value * r.count, 0) === Number(totalAmount) &&
+            denominationRows.reduce((sum, r) => sum + r.count, 0) === Number(envelopeCount));
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -75,12 +93,7 @@ const CreateRoom = () => {
             body.min_value = Number(minValue);
             body.max_value = Number(maxValue);
         } else {
-            const values = fixedValuesText
-                .split(/[\n,]+/)
-                .map((v) => v.trim())
-                .filter(Boolean)
-                .map(Number);
-            body.fixed_values = values;
+            body.fixed_values = denominationRows.flatMap((r) => Array(r.count).fill(r.value));
         }
 
         if (expiresInHours) {
@@ -94,16 +107,16 @@ const CreateRoom = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
             });
-            const data = await res.json();
+            const data = await readJson<CreatePoolResponse>(res);
             if (!res.ok) {
-                setError(ERROR_MESSAGES[data.error] ?? "Có lỗi xảy ra, vui lòng thử lại.");
+                setError(apiErrorMessage(res, data, ERROR_MESSAGES));
                 setSubmitting(false);
                 return;
             }
             localStorage.setItem(`lucky_host_token_${data.id}`, data.host_token);
             router.push(`/pool/${data.id}`);
         } catch {
-            setError("Không thể kết nối máy chủ.");
+            setError(NETWORK_ERROR_MESSAGE);
             setSubmitting(false);
         }
     }
@@ -158,29 +171,24 @@ const CreateRoom = () => {
                     </div>
 
                     <div className={styles.row}>
-                        <div className={styles.inputGroup}>
-                            <label>Tổng số tiền</label>
-                            <input
-                                type="number"
-                                min={1}
-                                placeholder="1000000"
-                                value={totalAmount}
-                                onChange={(e) => setTotalAmount(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className={styles.inputGroup}>
-                            <label>Số bao lì xì</label>
-                            <input
-                                type="number"
-                                min={1}
-                                max={500}
-                                placeholder="10"
-                                value={envelopeCount}
-                                onChange={(e) => setEnvelopeCount(e.target.value)}
-                                required
-                            />
-                        </div>
+                        <AmountInput
+                            label="Tổng số tiền"
+                            icon="payments"
+                            suffix="đ"
+                            placeholder="1.000.000"
+                            value={totalAmount}
+                            onChange={setTotalAmount}
+                            required
+                        />
+                        <AmountInput
+                            label="Số bao lì xì"
+                            icon="inventory_2"
+                            suffix="bao"
+                            placeholder="10"
+                            value={envelopeCount}
+                            onChange={setEnvelopeCount}
+                            required
+                        />
                     </div>
 
                     <div className={styles.inputGroup}>
@@ -209,42 +217,32 @@ const CreateRoom = () => {
 
                     {mode === "random" ? (
                         <div className={styles.row}>
-                            <div className={styles.inputGroup}>
-                                <label>Giá trị tối thiểu / bao</label>
-                                <input
-                                    type="number"
-                                    min={1}
-                                    value={minValue}
-                                    onChange={(e) => setMinValue(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div className={styles.inputGroup}>
-                                <label>Giá trị tối đa / bao</label>
-                                <input
-                                    type="number"
-                                    min={1}
-                                    value={maxValue}
-                                    onChange={(e) => setMaxValue(e.target.value)}
-                                    required
-                                />
-                            </div>
+                            <AmountInput
+                                label="Giá trị tối thiểu / bao"
+                                icon="trending_down"
+                                suffix="đ"
+                                value={minValue}
+                                onChange={setMinValue}
+                                required
+                            />
+                            <AmountInput
+                                label="Giá trị tối đa / bao"
+                                icon="trending_up"
+                                suffix="đ"
+                                value={maxValue}
+                                onChange={setMaxValue}
+                                required
+                            />
                         </div>
                     ) : (
                         <div className={styles.inputGroup}>
-                            <label>
-                                Giá trị từng bao (cách nhau bằng dấu phẩy hoặc
-                                xuống dòng)
-                            </label>
-                            <textarea
-                                rows={3}
-                                placeholder="50000, 50000, 20000, 10000..."
-                                value={fixedValuesText}
-                                onChange={(e) =>
-                                    setFixedValuesText(e.target.value)
-                                }
-                                required
-                            ></textarea>
+                            <label>Giá trị từng bao</label>
+                            <DenominationComposer
+                                targetTotal={Number(totalAmount)}
+                                targetCount={Number(envelopeCount)}
+                                rows={denominationRows}
+                                onRowsChange={setDenominationRows}
+                            />
                         </div>
                     )}
 
@@ -271,7 +269,7 @@ const CreateRoom = () => {
                         <button
                             className={styles.submitBtn}
                             type="submit"
-                            disabled={submitting}
+                            disabled={submitting || !fixedModeReady}
                         >
                             <span>
                                 {submitting

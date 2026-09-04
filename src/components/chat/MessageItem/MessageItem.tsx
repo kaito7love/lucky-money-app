@@ -7,7 +7,6 @@ interface MessageProps {
     avatar?: string;
     isMine?: boolean;
     status?: string;
-    image?: string;
 }
 
 const MessageItem: React.FC<MessageProps> = ({
@@ -16,7 +15,6 @@ const MessageItem: React.FC<MessageProps> = ({
     avatar,
     isMine,
     status,
-    image,
 }) => (
     <div
         className={`${styles.container} ${
@@ -31,15 +29,9 @@ const MessageItem: React.FC<MessageProps> = ({
         )}
         <div className={styles.msgBody}>
             {!isMine && <span className={styles.sender}>{sender}</span>}
-            {image ? (
-                <div className={styles.stickerBox}>
-                    <img src={image} alt="sticker" />
-                </div>
-            ) : (
-                <div className={styles.bubble}>
-                    <p>{text}</p>
-                </div>
-            )}
+            <div className={styles.bubble}>
+                <p>{text}</p>
+            </div>
             {status && <span className={styles.status}>{status}</span>}
         </div>
     </div>

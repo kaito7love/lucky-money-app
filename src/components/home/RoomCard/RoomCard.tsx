@@ -5,20 +5,15 @@ interface RoomProps {
     desc: string;
     countLabel: string;
     timeLabel: string;
-    img?: string;
     hasBadge?: boolean;
     onClick?: () => void;
 }
 
-const RoomCard = ({ name, desc, countLabel, timeLabel, img, hasBadge, onClick }: RoomProps) => (
+const RoomCard = ({ name, desc, countLabel, timeLabel, hasBadge, onClick }: RoomProps) => (
     <div className={styles.card} onClick={onClick}>
         <div className={styles.avatarSection}>
             <div className={styles.avatarCircle}>
-                {img ? (
-                    <img src={img} className={styles.img} alt={name} />
-                ) : (
-                    <div className={styles.avatarInitial}>{name.trim().charAt(0).toUpperCase() || "?"}</div>
-                )}
+                <div className={styles.avatarInitial}>{name.trim().charAt(0).toUpperCase() || "?"}</div>
             </div>
             {hasBadge && (
                 <div className={styles.badge}>

@@ -3,6 +3,14 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { isValidPhone, normalizePhone } from "@/lib/phone";
 import { findOrCreateUserByPhone } from "@/lib/auth";
 import { verifySecret } from "@/lib/hash";
+import { isMalformedValueError } from "@/lib/pgError";
+import {
+  callerKey,
+  clearRateLimit,
+  consumeAll,
+  CLAIM_PIN_PER_CALLER_POOL,
+  CLAIM_PIN_PER_POOL,
+} from "@/lib/rateLimit";
 
 const ERROR_MESSAGES: Record<string, string> = {
   MISSING_NAME: "Vui lòng nhập tên (số điện thoại này chưa có tài khoản).",
@@ -10,9 +18,17 @@ const ERROR_MESSAGES: Record<string, string> = {
   INVALID_PIN: "Mã PIN không đúng.",
   POOL_NOT_FOUND: "Không tìm thấy lì xì này.",
   POOL_CLOSED: "Lì xì này đã đóng.",
+  POOL_EXPIRED: "Lì xì này đã hết hạn.",
   ALREADY_CLAIMED: "Bạn đã nhận lì xì này rồi.",
+  TOO_MANY_PIN_ATTEMPTS: "Bạn đã nhập sai mã PIN quá nhiều lần. Vui lòng đợi ít phút rồi thử lại.",
   NO_ENVELOPES_LEFT: "Đã hết bao lì xì, chúc bạn năm sau may mắn hơn!",
+  POOL_LOOKUP_FAILED: "Không thể tải lì xì này, vui lòng thử lại.",
+  USER_LOOKUP_FAILED: "Không thể kiểm tra số điện thoại, vui lòng thử lại.",
+  USER_CREATE_FAILED: "Không thể tạo tài khoản, vui lòng thử lại.",
 };
+
+/** Every code claim_envelope() can raise, in the order they are looked for. */
+const RAISED_CODES = ["ALREADY_CLAIMED", "NO_ENVELOPES_LEFT", "POOL_EXPIRED", "POOL_CLOSED"];
 
 export async function POST(req: NextRequest) {
   let body: { qr_token?: string; name?: string; phone?: string; pin?: string };
@@ -34,17 +50,46 @@ export async function POST(req: NextRequest) {
     .from("pools")
     .select("id, is_private, pin_hash")
     .eq("qr_token", qrToken)
-    .single();
+    .maybeSingle();
 
-  if (poolError || !pool) {
+  // A dead query and a genuinely missing pool used to return the same 404, so
+  // a misconfigured deployment was indistinguishable from a bad link. A token
+  // that is not a uuid is neither: it is a bad link that never reached the
+  // table, and belongs with the 404 below.
+  if (poolError && !isMalformedValueError(poolError)) {
+    return NextResponse.json(
+      { error: "POOL_LOOKUP_FAILED", message: ERROR_MESSAGES.POOL_LOOKUP_FAILED },
+      { status: 500 }
+    );
+  }
+  if (!pool) {
     return NextResponse.json({ error: "POOL_NOT_FOUND", message: ERROR_MESSAGES.POOL_NOT_FOUND }, { status: 404 });
   }
 
+  // Only private pools are rate-limited here: a public pool has no secret to
+  // guess, and its own one-envelope-per-phone rule already caps what a single
+  // guest can take. The budget is scoped to this pool so guessing at one pool
+  // cannot lock a guest out of another.
   if (pool.is_private) {
+    const caller = callerKey(req);
+    const callerBudget = `claim-pin:caller:${caller}:${pool.id}`;
+    const allowed = await consumeAll([
+      { key: callerBudget, rule: CLAIM_PIN_PER_CALLER_POOL },
+      { key: `claim-pin:pool:${pool.id}`, rule: CLAIM_PIN_PER_POOL },
+    ]);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "TOO_MANY_PIN_ATTEMPTS", message: ERROR_MESSAGES.TOO_MANY_PIN_ATTEMPTS },
+        { status: 429 }
+      );
+    }
+
     const pin = body.pin?.trim();
     if (!pin || !pool.pin_hash || !verifySecret(pin, pool.pin_hash)) {
       return NextResponse.json({ error: "INVALID_PIN", message: ERROR_MESSAGES.INVALID_PIN }, { status: 403 });
     }
+
+    await clearRateLimit(callerBudget);
   }
 
   let claimant;
@@ -54,7 +99,12 @@ export async function POST(req: NextRequest) {
     if (err instanceof Error && err.message === "NAME_REQUIRED") {
       return NextResponse.json({ error: "MISSING_NAME", message: ERROR_MESSAGES.MISSING_NAME }, { status: 400 });
     }
-    throw err;
+    // Every other code out of findOrCreateUserByPhone is the database failing,
+    // not the guest's input. Rethrowing handed Next a bare 500 with no body,
+    // and the claim screen had nothing to show but a guess at the cause.
+    const code = err instanceof Error ? err.message : "CLAIM_FAILED";
+    const message = ERROR_MESSAGES[code] ?? "Máy chủ gặp lỗi, vui lòng thử lại.";
+    return NextResponse.json({ error: code, message }, { status: 500 });
   }
 
   const { data, error } = await supabaseAdmin.rpc("claim_envelope", {
@@ -64,13 +114,9 @@ export async function POST(req: NextRequest) {
   });
 
   if (error) {
-    const code = error.message.includes("ALREADY_CLAIMED")
-      ? "ALREADY_CLAIMED"
-      : error.message.includes("NO_ENVELOPES_LEFT")
-        ? "NO_ENVELOPES_LEFT"
-        : error.message.includes("POOL_CLOSED")
-          ? "POOL_CLOSED"
-          : "CLAIM_FAILED";
+    // claim_envelope() reports its outcome by raising, so the code arrives
+    // buried in a Postgres error message rather than as a field of its own.
+    const code = RAISED_CODES.find((raised) => error.message.includes(raised)) ?? "CLAIM_FAILED";
     const message = ERROR_MESSAGES[code] ?? "Có lỗi xảy ra, vui lòng thử lại.";
     const status = code === "CLAIM_FAILED" ? 500 : 409;
     return NextResponse.json({ error: code, message }, { status });

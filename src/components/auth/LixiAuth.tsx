@@ -6,7 +6,15 @@ import styles from "./LixiAuth.module.css";
 import Header from "./Header/AuthHeader";
 import AuthTabs from "./AuthTabs/AuthTabs";
 import InputField from "./InputField/InputField";
-import { useSession } from "@/lib/SessionContext";
+import { useSession, type SessionUser } from "@/lib/SessionContext";
+import { apiErrorMessage, NETWORK_ERROR_MESSAGE, readJson } from "@/lib/apiError";
+
+interface AuthResponse {
+    session_token: string;
+    user: SessionUser;
+    error?: string;
+    message?: string;
+}
 
 const LixiAuth = () => {
     const router = useRouter();
@@ -28,16 +36,18 @@ const LixiAuth = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(isLogin ? { phone, password } : { name, phone, password }),
             });
-            const data = await res.json();
+            const data = await readJson<AuthResponse>(res);
             if (!res.ok) {
-                setError(data.message ?? "Có lỗi xảy ra, vui lòng thử lại.");
+                setError(apiErrorMessage(res, data));
                 setSubmitting(false);
                 return;
             }
             login(data.session_token, data.user);
             router.push("/profile");
         } catch {
-            setError("Không thể kết nối máy chủ.");
+            // Only a fetch that never got a response reaches here now: reading
+            // the body above can no longer throw a server error into this catch.
+            setError(NETWORK_ERROR_MESSAGE);
             setSubmitting(false);
         }
     }

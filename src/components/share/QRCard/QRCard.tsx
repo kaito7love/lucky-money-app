@@ -21,6 +21,10 @@ const QRCard = ({ qrDataUrl, statusText, remaining, totalEnvelopes }: QRCardProp
             <div className={styles.qrFrame}>
                 <div className={styles.qrInner}>
                     {qrDataUrl ? (
+                        // A base64 data: URI generated in the browser, not a
+                        // fetched asset — next/image has nothing to optimize
+                        // here and would only add a wrapper around it.
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                             src={qrDataUrl}
                             alt="QR nhận lì xì"
