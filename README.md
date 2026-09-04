@@ -77,10 +77,17 @@ database. Phủ phần tính tiền (`src/lib/envelopes.ts`,
 `src/lib/fillFromDenominations.ts`) và các helper trên đường xác thực.
 
 **Integration test** (`npm run test:integration`) — cần dev server **và**
-Supabase đang chạy, vì nó gọi API thật và đọc database thật. Hiện phủ cron
-keep-alive: đây là cách duy nhất chứng minh endpoint thật sự truy vấn
-Postgres, thứ mà mock không bao giờ kiểm được. Thiếu server hoặc database
-thì nó **báo lỗi kèm hướng dẫn**, không im lặng bỏ qua.
+Supabase đang chạy, vì nó gọi API thật và đọc database thật. Thiếu server
+hoặc database thì nó **báo lỗi kèm hướng dẫn**, không im lặng bỏ qua. Hiện
+phủ hai thứ chỉ kiểm được khi chạy thật:
+
+- **`claim_envelope()`** — bắn hàng chục lượt nhận song song vào cùng một
+  phòng để chứng minh không bao nào bị phát hai lần. Test tuần tự sẽ pass
+  ngay cả với một hàm không khoá gì cả, nên đây là cách duy nhất bắt được
+  lỗi race.
+- **Cron keep-alive** — đối chiếu số phòng trong response với số đếm thật
+  từ database, để chắc chắn endpoint có truy vấn Postgres chứ không trả
+  JSON tĩnh.
 
 ```bash
 npm run test:integration
@@ -89,8 +96,8 @@ npm run test:integration
 TEST_BASE_URL=https://<app>.vercel.app npm run test:integration
 ```
 
-Chưa có test cho các API route khác, hàm Postgres `claim_envelope()`, và
-React component.
+Chưa có test cho các API route khác (`/api/pools`, `/api/claim`) và React
+component.
 
 ## Cấu trúc
 
@@ -221,8 +228,8 @@ Cách kiểm tra sau khi deploy:
   được phòng chat mới từ giao diện.
 - **Mất `host_token` mà phòng không gắn tài khoản** thì không khôi phục được
   quyền quản lý.
-- **Chưa có test** cho API route, hàm Postgres `claim_envelope()`, và React
-  component.
+- **Chưa có test** cho các API route (`/api/pools`, `/api/claim`) và React
+  component. Phần tính tiền và `claim_envelope()` thì đã có.
 
 ## Chưa làm (để sau)
 
