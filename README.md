@@ -104,7 +104,7 @@ npm run test:integration
 TEST_BASE_URL=https://<app>.vercel.app npm run test:integration
 ```
 
-Chưa có test cho các route chat/auth và React component.
+Chưa có test cho các route chat và React component.
 
 ## Cấu trúc
 
@@ -170,6 +170,12 @@ supabase/migrations/  0001 → 0009
 
 - **Trang host dùng polling, không dùng realtime.** Đơn giản hơn, và không
   cần mở kết nối Supabase từ trình duyệt.
+
+- **Token đi trong header, không đi trong URL.** `Authorization: Bearer` cho
+  session, `X-Host-Token` cho quyền quản lý một phòng. Đường dẫn request bị
+  ghi nguyên văn vào log của nền tảng (Vercel ghi path của mọi lần gọi hàm),
+  nên để token trên URL là để chứng chỉ còn hiệu lực nằm trong log. Riêng
+  các lời gọi POST vẫn gửi token trong body — body không bị ghi log kiểu đó.
 
 - **Tra cứu ví bằng SĐT không cần mật khẩu** — đánh đổi có chủ đích: ai biết
   số của bạn thì xem được tổng bạn đã nhận.
@@ -248,7 +254,7 @@ Cách kiểm tra sau khi deploy:
   quyền quản lý.
 - **Tổng tiền một phòng tối đa 2.147.483.647đ**, giới hạn của kiểu
   `integer` trong Postgres.
-- **Chưa có test** cho các route chat/auth và React component. Toàn bộ
+- **Chưa có test** cho các route chat và React component. Toàn bộ
   đường đi của tiền (tạo phòng → phát bao → ví) thì đã có.
 
 ## Chưa làm (để sau)
