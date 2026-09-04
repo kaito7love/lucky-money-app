@@ -363,6 +363,40 @@ test("mỗi lượt nhận ghi một giao dịch ví với số dư cộng dồn
     );
 });
 
+// Regression: the pool row lock serializes claims inside one pool, but the
+// wallet ledger is keyed by phone — two pools are two locks. Both claims read
+// the same prior sum and each wrote its own total over it, so someone who
+// received 70.000đ + 30.000đ ended up with a ledger reading 70.000đ and
+// 30.000đ. /api/wallet/[phone] shows the newest balance_after, so the wallet
+// displayed 30.000đ, and stayed wrong because the column is stored.
+test("cùng một người nhận ở hai phòng cùng lúc: số dư ví vẫn cộng đúng", async () => {
+    const phone = `${TEST_CLAIMANT_PREFIX}70`;
+    const first = await makePool([70_000]);
+    const second = await makePool([30_000]);
+
+    await Promise.all([
+        claim(first, "Người A", phone),
+        claim(second, "Người A", phone),
+    ]);
+
+    const { data } = await db
+        .from("wallet_transactions")
+        .select("amount, balance_after")
+        .eq("phone_number", phone);
+
+    assert.equal(data?.length, 2, "thiếu giao dịch ví");
+    const received = data!.reduce((sum, t) => sum + t.amount, 0);
+    assert.equal(received, 100_000, "tổng tiền thực nhận sai");
+
+    // Không dựa vào thứ tự: created_at mặc định là now(), tức thời điểm mở
+    // transaction chứ không phải lúc ghi, nên hai lượt chồng nhau có thể ra
+    // timestamp ngược. Điều cần khẳng định là lượt sau đã cộng lên lượt trước
+    // — nếu bị ghi đè thì số lớn nhất chỉ còn là 70.000đ.
+    const balances = data!.map((t) => t.balance_after);
+    assert.equal(Math.max(...balances), received, "số dư cuối không cộng dồn đủ");
+    assert.equal(new Set(balances).size, 2, "hai giao dịch ghi trùng số dư");
+});
+
 test("lượt nhận bị từ chối không để lại giao dịch ví", async () => {
     const poolId = await makePool([10_000], { status: "closed" });
     const phone = `${TEST_CLAIMANT_PREFIX}62`;

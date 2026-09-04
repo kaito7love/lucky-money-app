@@ -19,7 +19,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pho
     return NextResponse.json({ error: "FETCH_FAILED" }, { status: 500 });
   }
 
-  const balance = transactions[0]?.balance_after ?? 0;
+  // Summed rather than read off the newest row's balance_after. created_at
+  // defaults to now(), which in Postgres is the transaction's start time, not
+  // the moment of the insert — so when someone claims from two pools at once,
+  // the row that committed second can carry the earlier timestamp and "newest"
+  // picks the wrong balance. A sum of the ledger cannot be put in the wrong
+  // order, which is the property a balance needs.
+  const balance = transactions.reduce((sum, t) => sum + t.amount, 0);
 
   return NextResponse.json({ balance, transactions });
 }

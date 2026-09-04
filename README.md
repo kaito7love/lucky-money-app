@@ -47,8 +47,8 @@ Postgres, không có file cục bộ nào, nên chạy được trên hosting se
    `anon key` **không dùng** — trình duyệt không nói chuyện trực tiếp với
    Supabase nữa, mọi truy vấn đều đi qua API route.
 
-3. Chạy lần lượt **cả 8 migration** trong `supabase/migrations/` theo đúng
-   thứ tự `0001` → `0008`, bằng SQL Editor của Supabase.
+3. Chạy lần lượt **cả 9 migration** trong `supabase/migrations/` theo đúng
+   thứ tự `0001` → `0009`, bằng SQL Editor của Supabase.
 
 4. Cài dependencies và chạy dev server:
 
@@ -78,13 +78,15 @@ database. Phủ phần tính tiền (`src/lib/envelopes.ts`,
 
 **Integration test** (`npm run test:integration`) — cần dev server **và**
 Supabase đang chạy, vì nó gọi API thật và đọc database thật. Thiếu server
-hoặc database thì nó **báo lỗi kèm hướng dẫn**, không im lặng bỏ qua. Hiện
-phủ hai thứ chỉ kiểm được khi chạy thật:
+hoặc database thì nó **báo lỗi kèm hướng dẫn**, không im lặng bỏ qua. Các
+file dùng chung một database nên chạy tuần tự (`--test-concurrency=1`).
+Hiện phủ ba thứ chỉ kiểm được khi chạy thật:
 
 - **`claim_envelope()`** — bắn hàng chục lượt nhận song song vào cùng một
   phòng để chứng minh không bao nào bị phát hai lần. Test tuần tự sẽ pass
   ngay cả với một hàm không khoá gì cả, nên đây là cách duy nhất bắt được
   lỗi race.
+- **Ví** — một người nhận ở hai phòng cùng lúc thì số dư vẫn phải cộng đủ.
 - **Cron keep-alive** — đối chiếu số phòng trong response với số đếm thật
   từ database, để chắc chắn endpoint có truy vấn Postgres chứ không trả
   JSON tĩnh.
@@ -106,7 +108,7 @@ src/app/api/      API route (pools, claim, auth, chat, wallet, cron)
 src/app/          Trang: /create /pool/[id] /claim/[token] /chat /wallet /auth /profile
 src/components/   UI theo từng màn
 src/lib/          Logic thuần: chia tiền, định dạng, session, truy vấn DB
-supabase/migrations/  0001 → 0008
+supabase/migrations/  0001 → 0009
 ```
 
 ## Quyết định thiết kế chính
@@ -143,7 +145,18 @@ supabase/migrations/  0001 → 0008
 
 - **Ví là ledger (append-only)** ở `wallet_transactions` thay vì một cột
   `balance`, để sau này thêm quy đổi ra tiền thật hoặc voucher mà không phải
-  viết lại.
+  viết lại. Số dư hiển thị là **tổng cột `amount`**, không đọc
+  `balance_after` của bản ghi mới nhất: `created_at` mặc định là `now()` —
+  thời điểm mở transaction chứ không phải lúc ghi — nên hai lượt nhận chồng
+  nhau có thể ra timestamp ngược, còn một phép tổng thì không thứ tự nào
+  làm sai được.
+
+- **Ví khoá theo số điện thoại, không theo phòng.** Khoá `FOR UPDATE` ở trên
+  chỉ tuần tự hoá trong cùng một phòng, mà ví lại tính theo số điện thoại —
+  một người nhận ở hai phòng cùng lúc thì hai transaction cùng đọc số dư cũ
+  rồi ghi đè nhau. `claim_envelope()` lấy thêm một advisory lock theo số điện
+  thoại, đặt **trước** khoá phòng để thứ tự lấy khoá luôn nhất quán, không
+  cặp nào deadlock được.
 
 - **Giới hạn số lần thử** ở `/api/claim` và `/api/auth/login`. PIN chỉ có
   4–6 chữ số nên nếu không chặn, người cầm link QR có thể dò hết phòng. Bộ đếm
@@ -165,8 +178,8 @@ Cả Vercel lẫn Supabase đều dùng được gói free.
 > nên đăng ký và đăng nhập hỏng hoàn toàn, người đang đăng nhập bị văng ra.
 
 1. Push code lên GitHub.
-2. Tạo project Supabase Cloud riêng cho production, chạy đủ cả 8 migration
-   `0001` → `0008`.
+2. Tạo project Supabase Cloud riêng cho production, chạy đủ cả 9 migration
+   `0001` → `0009`.
 3. Import repo vào [Vercel](https://vercel.com), rồi vào **Project Settings
    → Environment Variables** điền đúng ba biến ở mục "Cài đặt":
    `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`.
