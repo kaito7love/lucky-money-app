@@ -44,14 +44,30 @@ const ERROR_MESSAGES: Record<string, string> = {
   POOL_LOOKUP_FAILED: "Không thể tải lì xì này, vui lòng thử lại.",
 };
 
-/** Pure fetch + parse, no state — callers apply the result via .then(). authQuery is
- * either "host_token=..." (this device created the pool) or "session_token=..."
- * (recovered by logging in as the account whose phone matches the pool's host).
+/**
+ * Which credential proves this visitor may manage the pool: the host_token
+ * this device stored at creation, or a session belonging to the account whose
+ * phone matches the pool's host.
+ *
+ * Kept as a tagged string rather than a headers object because it is an effect
+ * dependency — an object would be a fresh identity on every render and the
+ * page would refetch forever.
+ */
+type Credential = `host:${string}` | `session:${string}`;
+
+function authHeaders(credential: Credential): HeadersInit {
+  const separator = credential.indexOf(":");
+  const kind = credential.slice(0, separator);
+  const token = credential.slice(separator + 1);
+  return kind === "host" ? { "X-Host-Token": token } : { Authorization: `Bearer ${token}` };
+}
+
+/** Pure fetch + parse, no state — callers apply the result via .then().
  * The response comes back alongside the body so callers can word a failure from
  * its status; parsing through readJson keeps a bodiless 500 from rejecting here,
  * where nothing is watching for it and the page would just sit on "Đang tải...". */
-async function fetchPoolData(id: string, authQuery: string): Promise<{ res: Response; json: PoolData & ApiErrorBody }> {
-  const res = await fetch(`/api/pools/${id}?${authQuery}`);
+async function fetchPoolData(id: string, credential: Credential): Promise<{ res: Response; json: PoolData & ApiErrorBody }> {
+  const res = await fetch(`/api/pools/${id}`, { headers: authHeaders(credential) });
   const json = await readJson<PoolData & ApiErrorBody>(res);
   return { res, json };
 }
@@ -74,18 +90,22 @@ export default function PoolHostPage() {
   const [error, setError] = useState<string | null>(null);
 
   const authReady = hostToken !== undefined && !sessionLoading;
-  const authQuery = hostToken ? `host_token=${hostToken}` : sessionToken ? `session_token=${sessionToken}` : null;
+  const credential: Credential | null = hostToken
+    ? `host:${hostToken}`
+    : sessionToken
+      ? `session:${sessionToken}`
+      : null;
 
   useEffect(() => {
-    if (!authQuery) return;
-    fetchPoolData(params.id, authQuery).then(({ res, json }) => {
+    if (!credential) return;
+    fetchPoolData(params.id, credential).then(({ res, json }) => {
       if (!res.ok) {
         setError(apiErrorMessage(res, json, ERROR_MESSAGES));
         return;
       }
       setData(json);
     });
-  }, [authQuery, params.id]);
+  }, [credential, params.id]);
 
   useEffect(() => {
     if (!data) return;
@@ -99,13 +119,13 @@ export default function PoolHostPage() {
   // every envelope's claimed_phone and value over the REST API, so the live
   // view is driven from the host-authenticated endpoint instead.
   useEffect(() => {
-    if (!authQuery) return;
+    if (!credential) return;
 
     let cancelled = false;
     const refresh = () => {
       // A backgrounded tab would otherwise keep polling for nothing.
       if (document.visibilityState !== "visible") return;
-      fetchPoolData(params.id, authQuery).then(({ res, json }) => {
+      fetchPoolData(params.id, credential).then(({ res, json }) => {
         if (cancelled || !res.ok) return;
         setData(json);
       });
@@ -118,12 +138,12 @@ export default function PoolHostPage() {
       clearInterval(timer);
       document.removeEventListener("visibilitychange", refresh);
     };
-  }, [authQuery, params.id]);
+  }, [credential, params.id]);
 
   if (!authReady) {
     return <p className="p-6 text-sm text-gray-600">Đang tải...</p>;
   }
-  if (!authQuery) {
+  if (!credential) {
     return (
       <main className="flex-1 p-6">
         <p className="text-red-600">
@@ -142,7 +162,7 @@ export default function PoolHostPage() {
   const claimUrl = buildClaimUrl(data.pool.qr_token);
 
   async function handleClosePool() {
-    if (!authQuery) return;
+    if (!credential) return;
     if (!window.confirm("Đóng phòng lì xì này ngay? Các bao chưa nhận sẽ không thể nhận được nữa.")) {
       return;
     }
@@ -152,7 +172,7 @@ export default function PoolHostPage() {
       body: JSON.stringify(hostToken ? { host_token: hostToken } : { session_token: sessionToken }),
     });
     if (res.ok) {
-      fetchPoolData(params.id, authQuery).then(({ res: refreshed, json }) => {
+      fetchPoolData(params.id, credential).then(({ res: refreshed, json }) => {
         if (refreshed.ok) setData(json);
       });
     } else {

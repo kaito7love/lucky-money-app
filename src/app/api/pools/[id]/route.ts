@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { effectivePoolStatus } from "@/lib/poolStatus";
 import { getUserBySessionToken } from "@/lib/auth";
 import { isMalformedValueError } from "@/lib/pgError";
+import { hostTokenFrom, sessionTokenFrom } from "@/lib/requestAuth";
 
 function maskPhone(phone: string | null): string | null {
   if (!phone || phone.length < 4) return phone;
@@ -31,8 +32,8 @@ async function isAuthorizedHost(
 /** Host-only view: requires host_token or a matching-phone session to prove ownership. */
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const hostToken = req.nextUrl.searchParams.get("host_token");
-  const sessionToken = req.nextUrl.searchParams.get("session_token");
+  const hostToken = hostTokenFrom(req);
+  const sessionToken = sessionTokenFrom(req);
   if (!hostToken && !sessionToken) {
     return NextResponse.json({ error: "MISSING_HOST_TOKEN" }, { status: 401 });
   }

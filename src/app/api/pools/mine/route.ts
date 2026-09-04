@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getUserBySessionToken } from "@/lib/auth";
+import { sessionTokenFrom } from "@/lib/requestAuth";
 
 /**
  * Recovery path for hosts on a new device: lists pools tied to the logged-in
@@ -9,7 +10,7 @@ import { getUserBySessionToken } from "@/lib/auth";
  * query.
  */
 export async function GET(req: NextRequest) {
-  const sessionToken = req.nextUrl.searchParams.get("session_token");
+  const sessionToken = sessionTokenFrom(req);
   if (!sessionToken) {
     return NextResponse.json({ error: "MISSING_SESSION_TOKEN" }, { status: 401 });
   }

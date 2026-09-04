@@ -46,7 +46,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
         async function resolveUser(): Promise<SessionUser | null> {
             if (!token) return null;
-            const res = await fetch(`/api/auth/me?session_token=${token}`);
+            const res = await fetch("/api/auth/me", {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             if (!res.ok) return null;
             const data = await readJson<{ user?: SessionUser }>(res);
             return data.user ?? null;

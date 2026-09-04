@@ -15,9 +15,9 @@ export interface MyRoom {
 
 const HOST_TOKEN_PREFIX = "lucky_host_token_";
 
-async function fetchRoom(url: string): Promise<MyRoom | null> {
+async function fetchRoom(url: string, headers: HeadersInit): Promise<MyRoom | null> {
     try {
-        const res = await fetch(url);
+        const res = await fetch(url, { headers });
         if (!res.ok) return null;
         const json = await res.json();
         return {
@@ -36,14 +36,13 @@ async function fetchRoom(url: string): Promise<MyRoom | null> {
 
 /** Pools whose host_phone is the logged-in account's, wherever they were made. */
 async function fetchAccountRooms(sessionToken: string): Promise<(MyRoom | null)[]> {
+    const headers = { Authorization: `Bearer ${sessionToken}` };
     try {
-        const res = await fetch(`/api/pools/mine?session_token=${sessionToken}`);
+        const res = await fetch("/api/pools/mine", { headers });
         if (!res.ok) return [];
         const { pools } = await res.json();
         return await Promise.all(
-            (pools as { id: string }[]).map((p) =>
-                fetchRoom(`/api/pools/${p.id}?session_token=${sessionToken}`)
-            )
+            (pools as { id: string }[]).map((p) => fetchRoom(`/api/pools/${p.id}`, headers))
         );
     } catch {
         return [];
@@ -59,7 +58,9 @@ async function fetchLocalRooms(): Promise<(MyRoom | null)[]> {
         const token = localStorage.getItem(key);
         if (token) entries.push({ id: key.slice(HOST_TOKEN_PREFIX.length), token });
     }
-    return Promise.all(entries.map((e) => fetchRoom(`/api/pools/${e.id}?host_token=${e.token}`)));
+    return Promise.all(
+        entries.map((e) => fetchRoom(`/api/pools/${e.id}`, { "X-Host-Token": e.token }))
+    );
 }
 
 /**
