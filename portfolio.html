@@ -1,0 +1,1161 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucky Money</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  html { color-scheme: light dark; }
+  body { margin: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<style>
+  :root {
+    --paper:      #FBF6F4;
+    --surface:    #FFFFFF;
+    --ink:        #241A18;
+    --muted:      #7C6763;
+    --rule:       #E6D9D5;
+    --rule-soft:  #F0E7E4;
+    --accent:     #B3241C;
+    --accent-dim: #F3E0DD;
+    --brass:      #9C7A33;
+
+    --display: "Bricolage Grotesque", "Be Vietnam Pro", system-ui, sans-serif;
+    --body: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+    --measure: 68ch;
+    --gutter: 148px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #17110F;
+      --surface:    #1F1815;
+      --ink:        #F0E6E2;
+      --muted:      #A08B86;
+      --rule:       #382B28;
+      --rule-soft:  #271E1B;
+      --accent:     #EF6E5F;
+      --accent-dim: #34211E;
+      --brass:      #CFA75C;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #17110F;
+    --surface:    #1F1815;
+    --ink:        #F0E6E2;
+    --muted:      #A08B86;
+    --rule:       #382B28;
+    --rule-soft:  #271E1B;
+    --accent:     #EF6E5F;
+    --accent-dim: #34211E;
+    --brass:      #CFA75C;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 26px 24px 96px;
+  }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---------- language switch ---------- */
+
+  .topline { display: flex; justify-content: flex-end; margin-bottom: 26px; }
+  .langswitch { display: flex; border: 1px solid var(--rule); }
+  .langswitch button {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    padding: 5px 11px 6px;
+    background: transparent;
+    color: var(--muted);
+    border: 0;
+    cursor: pointer;
+    transition: color .16s ease, background .16s ease;
+  }
+  .langswitch button + button { border-left: 1px solid var(--rule); }
+  .langswitch button:hover { color: var(--ink); }
+  .langswitch button.is-on { background: var(--ink); color: var(--paper); }
+
+  /* ---------- masthead ---------- */
+
+  .masthead { display: flex; flex-direction: column; gap: 20px; }
+
+  .kicker {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-optical-sizing: auto;
+    font-weight: 700;
+    font-size: clamp(44px, 8vw, 76px);
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  h1 .vn {
+    display: block;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.46em;
+    letter-spacing: -0.015em;
+    margin-top: 0.32em;
+  }
+
+  .standfirst {
+    max-width: var(--measure);
+    font-size: 18px;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(126px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border-block: 1px solid var(--rule);
+    margin-top: 12px;
+  }
+  .fact { background: var(--paper); padding: 14px 16px 15px; }
+  .fact dt {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 4px;
+  }
+  .fact dd {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .links { display: flex; flex-wrap: wrap; gap: 10px; }
+  .link-btn {
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 9px 15px;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    text-decoration: none;
+    transition: background .16s ease, color .16s ease, border-color .16s ease;
+  }
+  .link-btn:hover { background: var(--ink); color: var(--paper); }
+  .link-btn.is-primary {
+    background: var(--accent); border-color: var(--accent); color: var(--surface);
+  }
+  .link-btn.is-primary:hover { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+
+  /* ---------- section frame ---------- */
+
+  section {
+    display: grid;
+    grid-template-columns: var(--gutter) minmax(0, 1fr);
+    gap: 0 40px;
+    padding-top: 40px;
+    margin-top: 44px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .aside { display: flex; flex-direction: column; gap: 6px; }
+  .aside h2 {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin: 0;
+  }
+  .aside .datum {
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .aside .datum b { color: var(--brass); font-weight: 500; }
+
+  .body > * + * { margin-top: 18px; }
+  .body p { max-width: var(--measure); margin: 0; }
+  .body h3 {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .small { font-size: 14px; color: var(--muted); max-width: var(--measure); }
+
+  @media (max-width: 720px) {
+    section { grid-template-columns: 1fr; gap: 0; }
+    .aside { flex-direction: row; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  }
+
+  /* ---------- flow ---------- */
+
+  .flow { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .step {
+    background: var(--paper);
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 14px;
+    padding: 13px 16px;
+    align-items: baseline;
+  }
+  .step .n {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .step .t { font-size: 15px; }
+  .step .t em { font-style: normal; color: var(--muted); }
+
+  /* ---------- envelope split demo ---------- */
+
+  .demo { border: 1px solid var(--rule); background: var(--surface); }
+  .demo-head {
+    display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+    gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--rule);
+  }
+  .demo-head .title {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .reroll {
+    font-family: var(--mono); font-size: 12px;
+    background: transparent; color: var(--accent);
+    border: 1px solid var(--accent); padding: 6px 12px; cursor: pointer;
+    transition: background .16s ease, color .16s ease;
+  }
+  .reroll:hover { background: var(--accent); color: var(--surface); }
+
+  .chips {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+    gap: 1px;
+    background: var(--rule-soft);
+  }
+  .chip {
+    background: var(--surface);
+    padding: 12px 13px 13px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .chip .amt {
+    font-family: var(--mono); font-size: 14px; font-variant-numeric: tabular-nums;
+  }
+  .chip .bar { height: 3px; background: var(--accent-dim); }
+  .chip .bar i { display: block; height: 100%; background: var(--accent); }
+  .chip .idx {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted);
+  }
+
+  .recon {
+    display: flex; flex-wrap: wrap; gap: 8px 24px;
+    padding: 12px 16px; border-top: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 12.5px; color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .recon b { color: var(--ink); font-weight: 500; }
+  .recon .ok { color: var(--brass); }
+
+  /* ---------- lock diagram ---------- */
+
+  .race { display: grid; gap: 10px; }
+  .race-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .actor, .result {
+    border: 1px solid var(--rule); background: var(--surface);
+    padding: 11px 13px; display: flex; flex-direction: column; gap: 3px;
+  }
+  .actor .who, .result .who { font-size: 14px; font-weight: 500; }
+  .actor .meta, .result .meta {
+    font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .result { border-color: var(--brass); }
+  .result .who { color: var(--brass); }
+
+  .gate {
+    border: 1px dashed var(--accent);
+    background: var(--accent-dim);
+    padding: 11px 14px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .gate .lock {
+    font-family: var(--mono); font-size: 12px; color: var(--ink);
+    display: flex; gap: 9px; align-items: baseline;
+  }
+  .gate .lock span:first-child { color: var(--accent); }
+
+  pre {
+    margin: 0;
+    overflow-x: auto;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    padding: 14px 16px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--ink);
+  }
+  pre .c { color: var(--muted); }
+  pre .k { color: var(--accent); }
+
+  .quote {
+    border-left: 2px solid var(--brass);
+    padding-left: 16px;
+    max-width: var(--measure);
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .quote b { color: var(--ink); font-weight: 500; }
+
+  /* ---------- tables ---------- */
+
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 420px; }
+  th, td {
+    text-align: left;
+    padding: 9px 14px 9px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: baseline;
+  }
+  th {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); font-weight: 500;
+    border-bottom-color: var(--rule);
+  }
+  td { font-size: 14.5px; }
+  td.num, th.num {
+    font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums;
+    padding-right: 0; width: 1%; white-space: nowrap;
+  }
+  td.file { font-family: var(--mono); font-size: 13px; }
+  tr.total td { border-bottom: none; border-top: 1px solid var(--rule); font-weight: 600; }
+  tr.total td.num { color: var(--brass); }
+
+  /* ---------- ruled list ---------- */
+
+  .ruled { display: grid; gap: 0; }
+  .ruled > div {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: 8px 28px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .ruled > div:last-child { border-bottom: none; }
+  .ruled .what { font-size: 15px; font-weight: 500; }
+  .ruled .why { font-size: 14.5px; color: var(--muted); }
+  @media (max-width: 600px) { .ruled > div { grid-template-columns: 1fr; } }
+
+  .caveats { display: grid; gap: 10px; padding: 0; margin: 0; list-style: none; }
+  .caveats li {
+    display: grid; grid-template-columns: 16px 1fr; gap: 10px;
+    font-size: 14.5px; color: var(--muted); max-width: var(--measure);
+  }
+  .caveats li::before {
+    content: "—"; color: var(--accent); font-family: var(--mono); font-size: 13px;
+  }
+
+  /* ---------- cv block ---------- */
+
+  .cv {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    padding: 18px 20px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.85;
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+
+  footer {
+    margin-top: 52px; padding-top: 22px; border-top: 1px solid var(--rule);
+    display: flex; flex-wrap: wrap; gap: 6px 20px; align-items: baseline;
+    font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="page">
+
+  <div class="topline">
+    <div class="langswitch" role="group" aria-label="Language / Ngôn ngữ">
+      <button type="button" data-lang="vi" class="is-on" aria-pressed="true">VI</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </div>
+
+  <!-- ============================ ENGLISH ============================ -->
+  <main id="lang-en" lang="en" hidden>
+
+    <header class="masthead">
+      <div class="kicker">Personal project · Aug — Sep 2026</div>
+      <h1>Lucky Money<span class="vn">Group red-envelope app for Tết</span></h1>
+      <p class="standfirst">
+        The host enters a total and a number of envelopes. The app splits the money into
+        random but always round amounts, then generates a QR code. Guests scan it, type a
+        name and phone number, and open one envelope — no install, no signup. The money
+        lands in a wallet, and the host sees who got what as it happens.
+      </p>
+      <dl class="facts">
+        <div class="fact"><dt>Role</dt><dd>Full-stack, solo</dd></div>
+        <div class="fact"><dt>Duration</dt><dd>12 days</dd></div>
+        <div class="fact"><dt>Commits</dt><dd>82</dd></div>
+        <div class="fact"><dt>Code</dt><dd>~6,000 lines TS</dd></div>
+        <div class="fact"><dt>Tests</dt><dd>123</dd></div>
+      </dl>
+      <div class="links">
+        <a class="link-btn is-primary" href="https://lucky-money-app-phi.vercel.app/">Open the live app →</a>
+        <a class="link-btn" href="https://github.com/kaito7love/lucky-money-app">github.com/kaito7love/lucky-money-app →</a>
+      </div>
+    </header>
+
+    <section>
+      <div class="aside">
+        <h2>Flow</h2>
+        <div class="datum">5 steps<br>create → claim</div>
+      </div>
+      <div class="body">
+        <div class="flow">
+          <div class="step"><span class="n">01</span><span class="t">The host creates a room — a total and an envelope count, or each denomination picked by hand from chips <em>5,000₫ → 500,000₫</em></span></div>
+          <div class="step"><span class="n">02</span><span class="t">The app splits the money once, at creation, and writes every envelope as its own row in <em>envelopes</em></span></div>
+          <div class="step"><span class="n">03</span><span class="t">Share by QR code or link. Optional 4–6 digit PIN for a private room, optional expiry in hours</span></div>
+          <div class="step"><span class="n">04</span><span class="t">Guests scan the QR with the phone camera in the browser, enter a name and phone, and open an unclaimed envelope</span></div>
+          <div class="step"><span class="n">05</span><span class="t">The wallet totals by phone number. The host's page fills in with who has claimed what</span></div>
+        </div>
+        <p class="small">
+          Guests having no account is the founding decision of the whole product: dropping
+          signup is the only way someone receives money in ten seconds. The phone number is
+          the wallet's identity. Anyone who wants to manage rooms long-term registers a real
+          account instead.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>Problem 1</h2>
+        <div class="datum">Splitting money<br><b>1,000,000₫ / 8</b></div>
+      </div>
+      <div class="body">
+        <h3>Random, but never 17,342₫</h3>
+        <p>
+          The amounts have to look like real money. The algorithm picks the coarsest step
+          that still leaves room to randomize, scatters the remainder across the envelopes,
+          generates several candidate splits, scores them for spread, and picks at random
+          among the best. It never lands on an odd number, and never on eight identical
+          envelopes.
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="title">A reduced version of the algorithm, running here</span>
+            <button class="reroll" id="reroll-en" type="button">Split again</button>
+          </div>
+          <div class="chips" id="chips-en">
+            <div class="chip"><span class="idx">ENV 1</span><span class="amt">150,000₫</span><span class="bar"><i style="width:60%"></i></span></div>
+            <div class="chip"><span class="idx">ENV 2</span><span class="amt">50,000₫</span><span class="bar"><i style="width:20%"></i></span></div>
+            <div class="chip"><span class="idx">ENV 3</span><span class="amt">100,000₫</span><span class="bar"><i style="width:40%"></i></span></div>
+            <div class="chip"><span class="idx">ENV 4</span><span class="amt">200,000₫</span><span class="bar"><i style="width:80%"></i></span></div>
+            <div class="chip"><span class="idx">ENV 5</span><span class="amt">50,000₫</span><span class="bar"><i style="width:20%"></i></span></div>
+            <div class="chip"><span class="idx">ENV 6</span><span class="amt">150,000₫</span><span class="bar"><i style="width:60%"></i></span></div>
+            <div class="chip"><span class="idx">ENV 7</span><span class="amt">250,000₫</span><span class="bar"><i style="width:100%"></i></span></div>
+            <div class="chip"><span class="idx">ENV 8</span><span class="amt">50,000₫</span><span class="bar"><i style="width:20%"></i></span></div>
+          </div>
+          <div class="recon">
+            <span>Host entered <b>1,000,000₫</b></span>
+            <span>Sum of 8 envelopes <b id="sum-en">1,000,000₫</b></span>
+            <span class="ok">✓ exact</span>
+            <span>≈ US$40</span>
+          </div>
+        </div>
+
+        <p>
+          The hand-picked mode is harder: every denomination the host tapped is pre-allocated
+          one envelope as a hard constraint — the app must not quietly drop a denomination
+          just because it is awkward to fit — and the remainder is solved with dynamic
+          programming. The result skews toward a bell curve, heavy in the middle, light at
+          both ends.
+        </p>
+        <p class="small">
+          Envelope values are computed exactly once, at room creation, and stored. Claiming
+          only takes a row nobody has taken yet; nothing recomputes, so the total cannot
+          drift over time.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>Problem 2</h2>
+        <div class="datum">Concurrency<br><b>migration 0009</b></div>
+      </div>
+      <div class="body">
+        <h3>Two people scanning the same QR in the same second</h3>
+        <p>
+          Everyone in the room is looking at one QR code on one screen, so claims arrive
+          essentially simultaneously. Handing out an envelope lives entirely inside a
+          PL/pgSQL function that locks the pool row with <code>for update</code> before it
+          draws, which serializes claims within a room.
+        </p>
+
+        <div class="race">
+          <div class="race-row">
+            <div class="actor"><span class="who">Nam scans the QR</span><span class="meta">t = 0ms · room A</span></div>
+            <div class="actor"><span class="who">Linh scans the QR</span><span class="meta">t = 0ms · room A</span></div>
+          </div>
+          <div class="gate">
+            <div class="lock"><span>1</span><span>pg_advisory_xact_lock(phone) — lock per person</span></div>
+            <div class="lock"><span>2</span><span>select … for update — lock per room</span></div>
+          </div>
+          <div class="race-row">
+            <div class="result"><span class="who">Nam gets 100,000₫</span><span class="meta">envelope #3 · wallet +100,000₫</span></div>
+            <div class="result"><span class="who">Linh gets 50,000₫</span><span class="meta">envelope #7 · wallet +50,000₫</span></div>
+          </div>
+        </div>
+
+        <p>
+          Locking the room was not enough. The wallet is keyed by phone number, and two
+          rooms are two different locks — one person claiming in two rooms at once meant two
+          transactions read the same stale balance and overwrote each other.
+        </p>
+        <p class="quote">
+          Someone who actually received <b>70,000₫ + 30,000₫</b> saw a wallet reading
+          <b>30,000₫</b>. Reproduced <b>6 times out of 6</b>. Fixed with an advisory lock on
+          the phone number, taken <b>before</b> the pool lock, so every claim acquires the
+          two in the same order and no pair can deadlock.
+        </p>
+
+<pre><span class="c">-- Taken first, so the lock order is always phone then pool.</span>
+<span class="k">perform</span> pg_advisory_xact_lock(hashtext(trim(p_phone)));
+
+<span class="k">select</span> * <span class="k">into</span> v_pool <span class="k">from</span> pools <span class="k">where</span> id = p_pool_id <span class="k">for update</span>;</pre>
+
+        <p class="small">
+          The wallet is an append-only ledger rather than a <code>balance</code> column, and
+          the balance shown is the sum of the <code>amount</code> column, not
+          <code>balance_after</code> on the newest row — <code>created_at</code> is when the
+          transaction opened, so two overlapping claims can land out of order, and a sum
+          does not care about order.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>Problem 3</h2>
+        <div class="datum">Operations<br><b>serverless</b></div>
+      </div>
+      <div class="body">
+        <h3>Three things that only break in production</h3>
+        <div class="ruled">
+          <div>
+            <span class="what">Rate limits counted in the database, not in memory</span>
+            <span class="why">A PIN is 4–6 digits, so anyone holding the QR link can brute-force a room. But every Vercel lambda is a separate process with no shared memory, so an in-memory counter guards exactly one instance. Locks after 5 wrong tries — without locking out other guests in the same room, and without following that person into another room.</span>
+          </div>
+          <div>
+            <span class="what">Tokens travel in headers, not in the URL</span>
+            <span class="why">Vercel logs the verbatim path of every function invocation, so a session token in a query string is a live credential sitting in the logs. Moved to <code>Authorization: Bearer</code> for sessions and <code>X-Host-Token</code> for room ownership.</span>
+          </div>
+          <div>
+            <span class="what">A daily cron keeps the Supabase free tier from pausing</span>
+            <span class="why">The free tier suspends a project after ~7 days without database activity, and a suspended project needs a manual Restore in the dashboard. The cron makes real queries and returns the room count it read — a number is the proof it touched Postgres instead of returning static JSON. If the database is down it returns 503 with the reason, rather than reporting fake success every day.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>Testing</h2>
+        <div class="datum"><b>123 tests</b><br>node:test</div>
+      </div>
+      <div class="body">
+        <h3>Split by what each kind can actually prove</h3>
+        <p>
+          Unit tests run any time, in under a second, with no server and no database — they
+          cover the money math. Integration tests hit the real API and the real database,
+          because three things can only be checked for real: that the envelopes written to
+          the database sum to what the host entered, the race condition under parallel
+          claims, and the PIN gate. A sequential test passes even against a function that
+          locks nothing, so this is the only way to catch the race.
+        </p>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr><th>Suite</th><th>What it covers</th><th class="num">Cases</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="file">pools</td><td>Envelopes written to the DB must sum to the host's total</td><td class="num">27</td></tr>
+              <tr><td class="file">claim</td><td>PIN gate and attempt limits</td><td class="num">23</td></tr>
+              <tr><td class="file">claimEnvelope</td><td>Dozens of parallel claims fired at one room</td><td class="num">18</td></tr>
+              <tr><td class="file">auth</td><td>Register, login, 30-day session expiry</td><td class="num">13</td></tr>
+              <tr><td class="file">keepalive</td><td>Whether the cron really queries Postgres</td><td class="num">8</td></tr>
+              <tr><td class="file">wallet</td><td>One person claiming in two rooms still totals correctly</td><td class="num">4</td></tr>
+              <tr><td class="file">envelopes · fillFromDenominations · phone · formatVnd</td><td>Unit — the splitting algorithms and helpers</td><td class="num">30</td></tr>
+              <tr class="total"><td>Total</td><td></td><td class="num">123</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small">
+          With no server or database, the integration suite <b>fails with instructions</b>
+          instead of silently skipping. Both suites use <code>node:test</code> built into
+          Node 22 — no test dependency added.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>Stack</h2>
+        <div class="datum">14 API routes<br>9 migrations</div>
+      </div>
+      <div class="body">
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Layer</th><th>Technology</th></tr></thead>
+            <tbody>
+              <tr><td class="file">Frontend</td><td>Next.js 16 App Router · React 19 · TypeScript · CSS Modules</td></tr>
+              <tr><td class="file">Backend</td><td>Next.js API routes · a PL/pgSQL function for handing out envelopes</td></tr>
+              <tr><td class="file">Database</td><td>Supabase Postgres · 9 hand-written SQL migrations</td></tr>
+              <tr><td class="file">Security</td><td>scrypt + timing-safe compare · rate limits in the DB · service role key server-side only</td></tr>
+              <tr><td class="file">QR</td><td><code>qrcode</code> to generate · <code>jsqr</code> to scan with the phone camera in-browser</td></tr>
+              <tr><td class="file">Deploy</td><td>Vercel + Supabase, both on free tiers · daily Vercel Cron</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small">
+          The browser never talks to Supabase directly — every query goes through an API
+          route, so the <code>anon key</code> is never used at all. The app reads exactly
+          three environment variables.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>Trade-offs</h2>
+        <div class="datum">deliberate</div>
+      </div>
+      <div class="body">
+        <div class="ruled">
+          <div>
+            <span class="what">Wallet lookup by phone number, no password</span>
+            <span class="why">Anyone who knows your number can see what you have received. Accepted: requiring a login to read one number would kill the reason people open the app at all.</span>
+          </div>
+          <div>
+            <span class="what">Hosts hold a room token in localStorage</span>
+            <span class="why">Lose the token and you lose control of the room, unless it is tied to a registered account. In exchange, creating a room needs no signup whatsoever.</span>
+          </div>
+          <div>
+            <span class="what">The host page polls instead of using realtime</span>
+            <span class="why">Simpler, and no Supabase connection opened from the browser. A few seconds of lag is fine for something people watch for a minute or two.</span>
+          </div>
+          <div>
+            <span class="what">Room locking favors correctness over throughput</span>
+            <span class="why">Claims within a room are serialized. At a few dozen to a few hundred guests per room that is still fast, and there is no cheaper way to be certain no envelope goes out twice.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>Known limits</h2>
+        <div class="datum">documented</div>
+      </div>
+      <div class="body">
+        <ul class="caveats">
+          <li>Chat rooms are hard-coded in the source; you cannot create a new one from the UI yet.</li>
+          <li>Lose the host token on a room with no account attached and ownership cannot be recovered.</li>
+          <li>A room caps at 2,147,483,647₫ — the limit of Postgres <code>integer</code>.</li>
+          <li>No tests for the chat routes or the React components. The whole path the money takes is covered.</li>
+        </ul>
+        <p class="small">
+          Later: OTP or OAuth for guests, cash-out or voucher conversion (the wallet schema
+          is already shaped for it), invites by phone list.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>For a CV</h2>
+        <div class="datum">short version</div>
+      </div>
+      <div class="body">
+        <div class="cv">Lucky Money — Group red-envelope web app for Tết        Aug – Sep 2026
+Personal project · Next.js 16, React 19, TypeScript, Supabase Postgres, Vercel
+lucky-money-app-phi.vercel.app · github.com/kaito7love/lucky-money-app
+
+• Built a full-stack web app for group red-envelope giving: hosts create a room,
+  share a QR code, guests scan and open a random envelope with no signup.
+• Solved concurrency at the database layer — a PL/pgSQL function combining a row
+  lock with an advisory lock guarantees no envelope is handed out twice when many
+  guests scan at once; proven by 18 integration tests firing claims in parallel.
+• Designed the money-splitting algorithm (randomized + dynamic programming) so
+  every envelope is a round 5k–500k₫ amount and the parts sum exactly to the
+  host's total.
+• Wrote 123 tests (30 unit + 93 integration) on node:test with no added test
+  dependency; deployed to Vercel + Supabase with a keep-alive cron.</div>
+      </div>
+    </section>
+
+    <footer>
+      <span>Nguyễn Phan Hoài Nam</span>
+      <span>·</span>
+      <a href="https://lucky-money-app-phi.vercel.app/">lucky-money-app-phi.vercel.app</a>
+      <span>·</span>
+      <a href="https://github.com/kaito7love/lucky-money-app">kaito7love/lucky-money-app</a>
+      <span>·</span>
+      <span>82 commits · Aug 25 → Sep 5, 2026</span>
+    </footer>
+
+  </main>
+
+  <!-- ============================ TIẾNG VIỆT ============================ -->
+  <main id="lang-vi" lang="vi">
+
+    <header class="masthead">
+      <div class="kicker">Dự án cá nhân · 08 — 09 / 2026</div>
+      <h1>Lucky Money<span class="vn">Web app lì xì nhóm dịp Tết</span></h1>
+      <p class="standfirst">
+        Host nhập tổng tiền và số bao. App chia thành các bao ngẫu nhiên nhưng luôn
+        là mệnh giá tròn, rồi sinh mã QR. Khách quét mã, nhập tên và số điện thoại,
+        mở một bao — không cài app, không đăng ký. Tiền vào ví, host thấy ngay ai
+        đã nhận bao nhiêu.
+      </p>
+      <dl class="facts">
+        <div class="fact"><dt>Vai trò</dt><dd>Full-stack, một mình</dd></div>
+        <div class="fact"><dt>Thời gian</dt><dd>12 ngày</dd></div>
+        <div class="fact"><dt>Commit</dt><dd>82</dd></div>
+        <div class="fact"><dt>Mã nguồn</dt><dd>~6.000 dòng TS</dd></div>
+        <div class="fact"><dt>Test</dt><dd>123</dd></div>
+      </dl>
+      <div class="links">
+        <a class="link-btn is-primary" href="https://lucky-money-app-phi.vercel.app/">Mở app đang chạy →</a>
+        <a class="link-btn" href="https://github.com/kaito7love/lucky-money-app">github.com/kaito7love/lucky-money-app →</a>
+      </div>
+    </header>
+
+    <section>
+      <div class="aside">
+        <h2>Luồng</h2>
+        <div class="datum">5 bước<br>tạo → nhận</div>
+      </div>
+      <div class="body">
+        <div class="flow">
+          <div class="step"><span class="n">01</span><span class="t">Host tạo phòng — nhập tổng tiền và số bao, hoặc tự chọn từng mệnh giá bằng chip <em>5.000đ → 500.000đ</em></span></div>
+          <div class="step"><span class="n">02</span><span class="t">App chia tiền ngay lúc tạo phòng và ghi từng bao thành một dòng trong bảng <em>envelopes</em></span></div>
+          <div class="step"><span class="n">03</span><span class="t">Chia sẻ bằng mã QR hoặc link. Bật PIN 4–6 số nếu muốn phòng riêng tư, đặt hạn nhận theo giờ</span></div>
+          <div class="step"><span class="n">04</span><span class="t">Khách quét QR bằng camera trong trình duyệt, nhập tên + SĐT, mở một bao chưa ai lấy</span></div>
+          <div class="step"><span class="n">05</span><span class="t">Ví cộng dồn theo số điện thoại. Trang host cập nhật danh sách người đã nhận</span></div>
+        </div>
+        <p class="small">
+          Người nhận không có tài khoản là quyết định gốc của cả sản phẩm: bỏ bước đăng ký
+          là cách duy nhất để một người được lì xì trong mười giây. Số điện thoại đóng vai
+          trò định danh cho ví. Ai muốn quản lý phòng lâu dài thì đăng ký tài khoản riêng.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>Bài toán 1</h2>
+        <div class="datum">Chia tiền<br><b>1.000.000đ / 8 bao</b></div>
+      </div>
+      <div class="body">
+        <h3>Ngẫu nhiên, nhưng không bao giờ ra 17.342đ</h3>
+        <p>
+          Số tiền phải trông như tiền thật. Thuật toán chọn bước chia thô nhất mà vẫn còn
+          dư địa để random, rải phần dư ngẫu nhiên vào các bao, sinh nhiều phương án rồi
+          chấm điểm theo độ đa dạng và chọn ngẫu nhiên trong nhóm tốt nhất. Không bao giờ
+          ra số lẻ, cũng không bao giờ ra tám bao giống hệt nhau.
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="title">Bản rút gọn của thuật toán, chạy ngay trên trang</span>
+            <button class="reroll" id="reroll-vi" type="button">Chia lại</button>
+          </div>
+          <div class="chips" id="chips-vi">
+            <div class="chip"><span class="idx">BAO 1</span><span class="amt">150.000đ</span><span class="bar"><i style="width:60%"></i></span></div>
+            <div class="chip"><span class="idx">BAO 2</span><span class="amt">50.000đ</span><span class="bar"><i style="width:20%"></i></span></div>
+            <div class="chip"><span class="idx">BAO 3</span><span class="amt">100.000đ</span><span class="bar"><i style="width:40%"></i></span></div>
+            <div class="chip"><span class="idx">BAO 4</span><span class="amt">200.000đ</span><span class="bar"><i style="width:80%"></i></span></div>
+            <div class="chip"><span class="idx">BAO 5</span><span class="amt">50.000đ</span><span class="bar"><i style="width:20%"></i></span></div>
+            <div class="chip"><span class="idx">BAO 6</span><span class="amt">150.000đ</span><span class="bar"><i style="width:60%"></i></span></div>
+            <div class="chip"><span class="idx">BAO 7</span><span class="amt">250.000đ</span><span class="bar"><i style="width:100%"></i></span></div>
+            <div class="chip"><span class="idx">BAO 8</span><span class="amt">50.000đ</span><span class="bar"><i style="width:20%"></i></span></div>
+          </div>
+          <div class="recon">
+            <span>Host nhập <b>1.000.000đ</b></span>
+            <span>Tổng 8 bao <b id="sum-vi">1.000.000đ</b></span>
+            <span class="ok">✓ khớp tuyệt đối</span>
+          </div>
+        </div>
+
+        <p>
+          Chế độ host tự chọn mệnh giá thì khó hơn: mỗi mệnh giá đã bấm được cấp trước một
+          bao như ràng buộc cứng — app không được âm thầm bỏ mệnh giá host đã chọn chỉ vì
+          khó chia — phần còn lại giải bằng quy hoạch động. Kết quả nghiêng về hình chuông,
+          mệnh giá giữa nhiều, hai đầu ít.
+        </p>
+        <p class="small">
+          Giá trị các bao tính đúng một lần lúc tạo phòng rồi lưu xuống database. Lúc nhận
+          chỉ bốc một dòng chưa ai lấy, không tính lại — nên tổng tiền không thể trôi theo
+          thời gian.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>Bài toán 2</h2>
+        <div class="datum">Đồng thời<br><b>migration 0009</b></div>
+      </div>
+      <div class="body">
+        <h3>Hai người quét QR trong cùng một giây</h3>
+        <p>
+          Cả phòng cùng nhìn một mã QR trên màn hình, nên các lượt nhận đến gần như đồng
+          thời. Việc phát bao nằm trọn trong một hàm PL/pgSQL, khoá dòng phòng bằng
+          <code>for update</code> trước khi bốc bao, nên các lượt nhận trong cùng một phòng
+          được xử lý tuần tự.
+        </p>
+
+        <div class="race">
+          <div class="race-row">
+            <div class="actor"><span class="who">Nam quét QR</span><span class="meta">t = 0ms · phòng A</span></div>
+            <div class="actor"><span class="who">Linh quét QR</span><span class="meta">t = 0ms · phòng A</span></div>
+          </div>
+          <div class="gate">
+            <div class="lock"><span>1</span><span>pg_advisory_xact_lock(SĐT) — khoá theo người</span></div>
+            <div class="lock"><span>2</span><span>select … for update — khoá theo phòng</span></div>
+          </div>
+          <div class="race-row">
+            <div class="result"><span class="who">Nam nhận 100.000đ</span><span class="meta">bao #3 · ví +100.000đ</span></div>
+            <div class="result"><span class="who">Linh nhận 50.000đ</span><span class="meta">bao #7 · ví +50.000đ</span></div>
+          </div>
+        </div>
+
+        <p>
+          Khoá phòng chưa đủ. Ví lại tính theo số điện thoại, mà hai phòng là hai khoá khác
+          nhau — một người nhận ở hai phòng cùng lúc thì hai transaction cùng đọc số dư cũ
+          rồi ghi đè nhau.
+        </p>
+        <p class="quote">
+          Người thật sự nhận <b>70.000đ + 30.000đ</b>, nhưng ví hiển thị <b>30.000đ</b>.
+          Tái hiện được <b>6/6 lần</b>. Sửa bằng advisory lock theo số điện thoại, lấy
+          <b>trước</b> khoá phòng để mọi lượt nhận đều lấy hai khoá theo cùng một thứ tự,
+          không cặp nào deadlock được.
+        </p>
+
+<pre><span class="c">-- Taken first, so the lock order is always phone then pool.</span>
+<span class="k">perform</span> pg_advisory_xact_lock(hashtext(trim(p_phone)));
+
+<span class="k">select</span> * <span class="k">into</span> v_pool <span class="k">from</span> pools <span class="k">where</span> id = p_pool_id <span class="k">for update</span>;</pre>
+
+        <p class="small">
+          Ví lưu dạng ledger append-only thay vì một cột <code>balance</code>, và số dư là
+          tổng cột <code>amount</code> chứ không đọc <code>balance_after</code> của dòng mới
+          nhất — vì <code>created_at</code> là thời điểm mở transaction, hai lượt nhận chồng
+          nhau có thể ra timestamp ngược, còn một phép tổng thì không thứ tự nào làm sai được.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>Bài toán 3</h2>
+        <div class="datum">Vận hành<br><b>serverless</b></div>
+      </div>
+      <div class="body">
+        <h3>Ba thứ chỉ vỡ khi lên production</h3>
+        <div class="ruled">
+          <div>
+            <span class="what">Rate-limit đếm trong database, không đếm trong RAM</span>
+            <span class="why">PIN chỉ 4–6 chữ số, ai cầm link QR là dò được. Nhưng trên Vercel mỗi lambda là một tiến trình riêng không chia sẻ bộ nhớ, nên bộ đếm trong RAM chặn được đúng một instance. Khoá sau 5 lần sai, không khoá lây sang khách khác cùng phòng, cũng không theo người đó sang phòng khác.</span>
+          </div>
+          <div>
+            <span class="what">Token đi trong header, không đi trong URL</span>
+            <span class="why">Vercel ghi nguyên văn path của mọi lần gọi hàm vào log. Để session token trên query string là để chứng chỉ còn hiệu lực nằm sẵn trong log. Chuyển sang <code>Authorization: Bearer</code> cho session và <code>X-Host-Token</code> cho quyền quản lý phòng.</span>
+          </div>
+          <div>
+            <span class="what">Cron giữ Supabase free tier khỏi bị pause</span>
+            <span class="why">Free tier tạm dừng project sau ~7 ngày không có hoạt động database, và đã dừng thì phải vào dashboard bấm Restore. Cron chạy mỗi ngày, thực hiện truy vấn thật rồi trả về số phòng đếm được — có số nghĩa là nó đã chạm Postgres chứ không trả JSON tĩnh. Database chết thì trả 503 kèm lý do, thay vì báo thành công giả mỗi ngày.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>Kiểm thử</h2>
+        <div class="datum"><b>123 test</b><br>node:test</div>
+      </div>
+      <div class="body">
+        <h3>Tách theo thứ chúng thật sự chứng minh được</h3>
+        <p>
+          Unit test chạy được mọi lúc, dưới một giây, không cần server hay database — phủ
+          phần tính tiền. Integration test gọi API thật và đọc database thật, vì có ba thứ
+          chỉ kiểm được khi chạy thật: tổng tiền ghi xuống database, race condition khi
+          nhận song song, và cổng PIN. Test tuần tự sẽ pass ngay cả với một hàm không khoá
+          gì cả — đây là cách duy nhất bắt được lỗi race.
+        </p>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr><th>Bộ test</th><th>Phủ cái gì</th><th class="num">Case</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="file">pools</td><td>Bao ghi xuống DB phải cộng đúng bằng tổng host nhập</td><td class="num">27</td></tr>
+              <tr><td class="file">claim</td><td>Cổng PIN và giới hạn số lần thử</td><td class="num">23</td></tr>
+              <tr><td class="file">claimEnvelope</td><td>Hàng chục lượt nhận song song vào cùng một phòng</td><td class="num">18</td></tr>
+              <tr><td class="file">auth</td><td>Đăng ký, đăng nhập, hạn session 30 ngày</td><td class="num">13</td></tr>
+              <tr><td class="file">keepalive</td><td>Cron có thật sự truy vấn Postgres không</td><td class="num">8</td></tr>
+              <tr><td class="file">wallet</td><td>Một người nhận ở hai phòng thì số dư vẫn cộng đủ</td><td class="num">4</td></tr>
+              <tr><td class="file">envelopes · fillFromDenominations · phone · formatVnd</td><td>Unit — thuật toán chia tiền và các helper</td><td class="num">30</td></tr>
+              <tr class="total"><td>Tổng</td><td></td><td class="num">123</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small">
+          Thiếu server hoặc database thì bộ integration <b>báo lỗi kèm hướng dẫn</b>, không
+          im lặng skip. Cả hai bộ dùng <code>node:test</code> có sẵn trong Node 22, không
+          thêm một dependency test nào.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>Stack</h2>
+        <div class="datum">14 API route<br>9 migration</div>
+      </div>
+      <div class="body">
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Lớp</th><th>Công nghệ</th></tr></thead>
+            <tbody>
+              <tr><td class="file">Frontend</td><td>Next.js 16 App Router · React 19 · TypeScript · CSS Modules</td></tr>
+              <tr><td class="file">Backend</td><td>Next.js API Routes · PL/pgSQL function cho phần phát bao</td></tr>
+              <tr><td class="file">Database</td><td>Supabase Postgres · 9 migration SQL viết tay</td></tr>
+              <tr><td class="file">Bảo mật</td><td>scrypt + timing-safe compare · rate limit trong DB · service role key chỉ ở server</td></tr>
+              <tr><td class="file">QR</td><td><code>qrcode</code> để sinh · <code>jsqr</code> quét bằng camera trong trình duyệt</td></tr>
+              <tr><td class="file">Deploy</td><td>Vercel + Supabase, cả hai đều gói free · Vercel Cron mỗi ngày</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small">
+          Trình duyệt không nói chuyện trực tiếp với Supabase — mọi truy vấn đều đi qua API
+          route, nên <code>anon key</code> không được dùng tới. App chỉ đọc đúng ba biến môi trường.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>Đánh đổi</h2>
+        <div class="datum">có chủ đích</div>
+      </div>
+      <div class="body">
+        <div class="ruled">
+          <div>
+            <span class="what">Tra cứu ví bằng SĐT, không cần mật khẩu</span>
+            <span class="why">Ai biết số của bạn thì xem được tổng bạn đã nhận. Chấp nhận, vì bắt đăng nhập để xem một con số sẽ giết luôn lý do người ta mở app.</span>
+          </div>
+          <div>
+            <span class="what">Host quản lý phòng bằng token trong localStorage</span>
+            <span class="why">Mất token là mất quyền quản lý, trừ khi phòng gắn với một tài khoản đã đăng nhập. Đổi lại: tạo phòng không cần đăng ký gì cả.</span>
+          </div>
+          <div>
+            <span class="what">Trang host polling, không dùng realtime</span>
+            <span class="why">Đơn giản hơn và không phải mở kết nối Supabase từ trình duyệt. Độ trễ vài giây là chấp nhận được với thứ người ta nhìn một hai phút.</span>
+          </div>
+          <div>
+            <span class="what">Khoá phòng ưu tiên đúng đắn hơn thông lượng</span>
+            <span class="why">Các lượt nhận trong một phòng bị tuần tự hoá. Với quy mô vài chục đến vài trăm người một phòng thì vẫn nhanh, và không có cách nào rẻ hơn để chắc chắn không bao nào phát hai lần.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>Hạn chế</h2>
+        <div class="datum">đã biết</div>
+      </div>
+      <div class="body">
+        <ul class="caveats">
+          <li>Danh sách phòng chat đang cố định trong code, chưa tạo phòng chat mới từ giao diện được.</li>
+          <li>Mất host token mà phòng không gắn tài khoản thì không khôi phục được quyền quản lý.</li>
+          <li>Tổng tiền một phòng tối đa 2.147.483.647đ — giới hạn kiểu <code>integer</code> của Postgres.</li>
+          <li>Chưa có test cho các route chat và React component. Toàn bộ đường đi của tiền thì đã phủ.</li>
+        </ul>
+        <p class="small">
+          Để sau: OTP hoặc OAuth cho người nhận, rút hoặc quy đổi ra voucher (schema ví đã
+          sẵn cho việc này), mời theo danh sách SĐT.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="aside">
+        <h2>Cho CV</h2>
+        <div class="datum">bản rút gọn</div>
+      </div>
+      <div class="body">
+        <div class="cv">Lucky Money — Web app lì xì nhóm dịp Tết          08/2026 – 09/2026
+Dự án cá nhân · Next.js 16, React 19, TypeScript, Supabase Postgres, Vercel
+lucky-money-app-phi.vercel.app · github.com/kaito7love/lucky-money-app
+
+• Xây dựng full-stack web app lì xì online: host tạo phòng, chia sẻ QR,
+  người nhận quét mã mở bao ngẫu nhiên mà không cần đăng ký tài khoản.
+• Giải bài toán concurrency ở tầng database: PL/pgSQL function với row lock
+  + advisory lock đảm bảo không bao lì xì nào bị phát hai lần khi nhiều người
+  quét QR cùng lúc; xác thực bằng 18 integration test chạy song song.
+• Thiết kế thuật toán chia tiền (randomized + quy hoạch động) luôn cho ra
+  mệnh giá tròn 5k–500k, tổng các bao khớp tuyệt đối với số host nhập.
+• Viết 123 test (30 unit + 93 integration) bằng node:test, không thêm
+  dependency; deploy production trên Vercel + Supabase với cron keep-alive.</div>
+      </div>
+    </section>
+
+    <footer>
+      <span>Nguyễn Phan Hoài Nam</span>
+      <span>·</span>
+      <a href="https://lucky-money-app-phi.vercel.app/">lucky-money-app-phi.vercel.app</a>
+      <span>·</span>
+      <a href="https://github.com/kaito7love/lucky-money-app">kaito7love/lucky-money-app</a>
+      <span>·</span>
+      <span>82 commit · 25.08.2026 → 05.09.2026</span>
+    </footer>
+
+  </main>
+
+</div>
+
+<script>
+  (function () {
+    /* ---------- language ---------- */
+    var panes = { en: document.getElementById("lang-en"), vi: document.getElementById("lang-vi") };
+    var buttons = document.querySelectorAll(".langswitch button");
+
+    function setLang(lang) {
+      if (!panes[lang]) return;
+      panes.en.hidden = lang !== "en";
+      panes.vi.hidden = lang !== "vi";
+      document.documentElement.lang = lang;
+      buttons.forEach(function (b) {
+        var on = b.getAttribute("data-lang") === lang;
+        b.classList.toggle("is-on", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      try { localStorage.setItem("lm-lang", lang); } catch (e) {}
+    }
+
+    buttons.forEach(function (b) {
+      b.addEventListener("click", function () { setLang(b.getAttribute("data-lang")); });
+    });
+
+    document.documentElement.lang = "vi";
+    try {
+      var saved = localStorage.getItem("lm-lang");
+      if (saved) setLang(saved);
+    } catch (e) {}
+
+    /* ---------- splitting demo ---------- */
+    var TOTAL = 1000000, N = 8, STEP = 50000;
+    var units = TOTAL / STEP;
+    var cap = Math.ceil((units / N) * 2.8);
+
+    function split() {
+      var a = [], i;
+      for (i = 0; i < N; i++) a.push(1);
+      var left = units - N;
+      while (left > 0) {
+        var pool = [];
+        for (i = 0; i < N; i++) if (a[i] < cap) pool.push(i);
+        if (!pool.length) break;
+        a[pool[Math.floor(Math.random() * pool.length)]] += 1;
+        left -= 1;
+      }
+      return a.map(function (u) { return u * STEP; });
+    }
+
+    function initDemo(suffix, locale, unit, label) {
+      var chips = document.getElementById("chips-" + suffix);
+      var sumEl = document.getElementById("sum-" + suffix);
+      var btn = document.getElementById("reroll-" + suffix);
+      if (!chips || !sumEl || !btn) return;
+
+      function money(n) { return n.toLocaleString(locale) + unit; }
+
+      btn.addEventListener("click", function () {
+        var vals = split();
+        var max = Math.max.apply(null, vals);
+        var sum = 0, html = "";
+        vals.forEach(function (v, i) {
+          sum += v;
+          html += '<div class="chip"><span class="idx">' + label + " " + (i + 1) + "</span>" +
+                  '<span class="amt">' + money(v) + "</span>" +
+                  '<span class="bar"><i style="width:' + Math.round((v / max) * 100) + '%"></i></span></div>';
+        });
+        chips.innerHTML = html;
+        sumEl.textContent = money(sum);
+      });
+    }
+
+    initDemo("en", "en-US", "₫", "ENV");
+    initDemo("vi", "vi-VN", "đ", "BAO");
+  })();
+</script>
+</body>
+</html>
